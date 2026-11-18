@@ -1,0 +1,207 @@
+/* Estilos compartidos y de Login */
+.auth-form-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-page-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 32px;
+  letter-spacing: -0.8px;
+  line-height: 1.2;
+}
+
+.auth-page-subtitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-top: -20px;
+  margin-bottom: 28px;
+}
+
+.bank-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.bank-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bank-label {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block;
+}
+
+/* Inputs y Selects */
+.bank-input,
+.bank-select {
+  width: 100%;
+  height: 48px;
+  padding: 10px 16px;
+  font-size: 15px;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.bank-input::placeholder {
+  color: var(--text-muted);
+}
+
+.bank-input:focus,
+.bank-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+/* Grupo de Documento: Selector + Input */
+.doc-input-group {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.doc-select {
+  width: 76px;
+  flex-shrink: 0;
+  cursor: pointer;
+  font-weight: 600;
+  text-align: center;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230000FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 14px;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 28px;
+}
+
+.doc-number-input {
+  flex: 1;
+}
+
+/* Botones principales y secundarios */
+.bank-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 28px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.bank-btn-primary {
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  border-color: var(--primary);
+}
+
+.bank-btn-primary:hover {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+  box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.bank-btn-primary:active {
+  background-color: var(--primary-active);
+}
+
+.bank-btn-secondary {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.bank-btn-secondary:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-dark);
+}
+
+/* Fila de acción en Login */
+.login-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 6px;
+}
+
+.forgot-password-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.forgot-password-link:hover {
+  text-decoration: underline;
+}
+
+.register-switch-container {
+  margin-top: 14px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-color);
+}
+
+.register-switch-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.register-switch-link {
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.register-switch-link:hover {
+  text-decoration: underline;
+}
+
+/* Alertas de error o feedback */
+.auth-alert-error {
+  background-color: var(--danger-light);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: var(--danger);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 480px) {
+  .auth-page-title {
+    font-size: 26px;
+    margin-bottom: 24px;
+  }
+  
+  .login-actions-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .login-actions-row .bank-btn {
+    width: 100%;
+  }
+}
