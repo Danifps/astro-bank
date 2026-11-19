@@ -6,8 +6,7 @@ import '../styles/Login.css';
 export default function LoginPage() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    tipoDocumento: 'V',
-    numeroDocumento: '',
+    usuarioOCedula: '',
     claveAcceso: ''
   });
   const [error, setError] = useState('');
@@ -23,14 +22,14 @@ export default function LoginPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.numeroDocumento.trim() || !formData.claveAcceso) {
+    if (!formData.usuarioOCedula.trim() || !formData.claveAcceso) {
       setError('Por favor complete todos los campos');
       return;
     }
 
     console.log('Login payload preparado para backend:', formData);
     // Simulación de éxito o feedback visual
-    alert(`Bienvenido a Astro Bank. Documento: ${formData.tipoDocumento}-${formData.numeroDocumento}`);
+    alert(`Bienvenido a Astro Bank: ${formData.usuarioOCedula}`);
   };
 
   return (
@@ -45,37 +44,22 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleSubmit} className="bank-form" noValidate>
-          {/* Campo 1: Tipo y número de documento */}
+          {/* Campo 1: Usuario o número de cédula */}
           <div className="bank-form-group">
-            <label className="bank-label" htmlFor="numeroDocumento">
-              Tipo y número de documento
+            <label className="bank-label" htmlFor="usuarioOCedula">
+              Usuario o número de cédula
             </label>
-            <div className="doc-input-group">
-              <select
-                name="tipoDocumento"
-                id="tipoDocumento"
-                value={formData.tipoDocumento}
-                onChange={handleChange}
-                className="bank-select doc-select"
-                aria-label="Tipo de documento"
-              >
-                <option value="V">V</option>
-                <option value="E">E</option>
-                <option value="J">J</option>
-                <option value="P">P</option>
-              </select>
-              <input
-                type="text"
-                id="numeroDocumento"
-                name="numeroDocumento"
-                value={formData.numeroDocumento}
-                onChange={handleChange}
-                placeholder="Número de documento"
-                className="bank-input doc-number-input"
-                autoComplete="username"
-                required
-              />
-            </div>
+            <input
+              type="text"
+              id="usuarioOCedula"
+              name="usuarioOCedula"
+              value={formData.usuarioOCedula}
+              onChange={handleChange}
+              placeholder="Usuario o número de cédula"
+              className="bank-input"
+              autoComplete="username"
+              required
+            />
           </div>
 
           {/* Campo 2: Clave de acceso */}

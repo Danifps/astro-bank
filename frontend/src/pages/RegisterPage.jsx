@@ -8,6 +8,8 @@ export default function RegisterPage() {
   const [step, setStep] = useState(1);
   const [errorMessage, setErrorMessage] = useState('');
   const [successModal, setSuccessModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Único estado JSON con todos los datos del formulario bancario
   const [formData, setFormData] = useState({
@@ -19,7 +21,7 @@ export default function RegisterPage() {
     // Paso 2: Datos personales
     fechaNacimiento: '',
     genero: '', // 'Hombre' | 'Mujer'
-    ocupacion: '',
+    direccion: '',
 
     // Paso 3: Contacto
     operadora: '0412',
@@ -27,12 +29,38 @@ export default function RegisterPage() {
     correoElectronico: '',
 
     // Paso 4: Seguridad
+    usuario: '',
     contrasena: '',
     confirmarContrasena: ''
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // Número de documento: solo dígitos y máximo 9
+    if (name === 'numeroDocumento') {
+      const numericVal = value.replace(/\D/g, '').slice(0, 9);
+      setFormData((prev) => ({ ...prev, [name]: numericVal }));
+      if (errorMessage) setErrorMessage('');
+      return;
+    }
+
+    // Teléfono: solo dígitos y máximo 7
+    if (name === 'numeroTelefono') {
+      const numericVal = value.replace(/\D/g, '').slice(0, 7);
+      setFormData((prev) => ({ ...prev, [name]: numericVal }));
+      if (errorMessage) setErrorMessage('');
+      return;
+    }
+
+    // Contraseña: máximo 16 caracteres
+    if (name === 'contrasena' || name === 'confirmarContrasena') {
+      const limitedVal = value.slice(0, 16);
+      setFormData((prev) => ({ ...prev, [name]: limitedVal }));
+      if (errorMessage) setErrorMessage('');
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: value
@@ -48,10 +76,66 @@ export default function RegisterPage() {
     if (errorMessage) setErrorMessage('');
   };
 
-  // Formato automático para fecha DD/MM/AA
+  // Validador detallado de fecha de nacimiento (días, meses, años)
+  const validateDateOfBirth = (dateStr) => {
+    if (!dateStr || dateStr.trim().length < 8) {
+      return 'Por favor ingrese su fecha de nacimiento completa (DD/MM/AAAA).';
+    }
+
+    const parts = dateStr.split('/');
+    if (parts.length !== 3) {
+      return 'Formato de fecha inválido. Ingrese DD/MM/AAAA.';
+    }
+
+    const dia = parseInt(parts[0], 10);
+    const mes = parseInt(parts[1], 10);
+    const anio = parseInt(parts[2], 10);
+    const currentYear = new Date().getFullYear();
+
+    // Validación de mes (no puede ser mayor a 12 ni menor a 1)
+    if (isNaN(mes) || mes < 1 || mes > 12) {
+      return `El mes ingresado (${parts[1]}) no es válido. Debe estar entre 01 y 12.`;
+    }
+
+    // Validación de día (no puede ser mayor a 31 ni menor a 1)
+    if (isNaN(dia) || dia < 1 || dia > 31) {
+      return `El día ingresado (${parts[0]}) no es válido. Debe estar entre 01 y 31.`;
+    }
+
+    // Año completo (soporta 2 o 4 dígitos)
+    let fullYear = anio;
+    if (parts[2].length === 2) {
+      fullYear = anio <= (currentYear % 100) ? 2000 + anio : 1900 + anio;
+    }
+
+    // Validar días según el mes específico (meses de 30 días, febrero)
+    const diasEnMes = new Date(fullYear || 2024, mes, 0).getDate();
+    if (dia > diasEnMes) {
+      return `El mes ${parts[1]} solo tiene ${diasEnMes} días.`;
+    }
+
+    // Validación de año: no puede ser mayor al año actual
+    if (isNaN(anio) || fullYear > currentYear) {
+      return `El año ingresado (${parts[2]}) no puede ser mayor al año actual (${currentYear}).`;
+    }
+
+    if (fullYear < 1900) {
+      return 'Por favor ingrese un año de nacimiento válido.';
+    }
+
+    // Comprobar fecha completa en el futuro
+    const fechaNac = new Date(fullYear, mes - 1, dia);
+    if (fechaNac > new Date()) {
+      return 'La fecha de nacimiento no puede ser una fecha futura.';
+    }
+
+    return null;
+  };
+
+  // Formato automático para fecha DD/MM/AAAA (hasta 8 dígitos numéricos)
   const handleDateChange = (e) => {
     let value = e.target.value.replace(/\D/g, '');
-    if (value.length > 6) value = value.slice(0, 6);
+    if (value.length > 8) value = value.slice(0, 8);
 
     let formatted = value;
     if (value.length > 2 && value.length <= 4) {
@@ -67,6 +151,13 @@ export default function RegisterPage() {
     if (errorMessage) setErrorMessage('');
   };
 
+  const handleDateBlur = () => {
+    if (formData.fechaNacimiento && formData.fechaNacimiento.length >= 8) {
+      const dateErr = validateDateOfBirth(formData.fechaNacimiento);
+      if (dateErr) setErrorMessage(dateErr);
+    }
+  };
+
   // Validaciones por paso
   const validateCurrentStep = () => {
     if (step === 1) {
@@ -74,21 +165,26 @@ export default function RegisterPage() {
         setErrorMessage('Por favor ingrese su número de documento.');
         return false;
       }
+      if (formData.numeroDocumento.length > 9) {
+        setErrorMessage('El número de documento no puede tener más de 9 dígitos.');
+        return false;
+      }
       if (!formData.nombresApellidos.trim()) {
         setErrorMessage('Por favor ingrese sus nombres y apellidos completos.');
         return false;
       }
     } else if (step === 2) {
-      if (!formData.fechaNacimiento.trim() || formData.fechaNacimiento.length < 8) {
-        setErrorMessage('Por favor ingrese su fecha de nacimiento en formato DD/MM/AA.');
+      const dateErr = validateDateOfBirth(formData.fechaNacimiento);
+      if (dateErr) {
+        setErrorMessage(dateErr);
         return false;
       }
       if (!formData.genero) {
         setErrorMessage('Por favor seleccione su género.');
         return false;
       }
-      if (!formData.ocupacion.trim()) {
-        setErrorMessage('Por favor ingrese su ocupación.');
+      if (!formData.direccion.trim()) {
+        setErrorMessage('Por favor ingrese su dirección.');
         return false;
       }
     } else if (step === 3) {
@@ -96,13 +192,25 @@ export default function RegisterPage() {
         setErrorMessage('Por favor ingrese su número de teléfono.');
         return false;
       }
+      if (formData.numeroTelefono.length !== 7) {
+        setErrorMessage('El número de teléfono debe tener exactamente 7 dígitos.');
+        return false;
+      }
       if (!formData.correoElectronico.trim() || !formData.correoElectronico.includes('@')) {
         setErrorMessage('Por favor ingrese un correo electrónico válido.');
         return false;
       }
     } else if (step === 4) {
+      if (!formData.usuario.trim()) {
+        setErrorMessage('Por favor ingrese su usuario.');
+        return false;
+      }
       if (!formData.contrasena || formData.contrasena.length < 6) {
         setErrorMessage('La contraseña debe tener al menos 6 caracteres.');
+        return false;
+      }
+      if (formData.contrasena.length > 16) {
+        setErrorMessage('La contraseña no puede tener más de 16 caracteres.');
         return false;
       }
       if (formData.contrasena !== formData.confirmarContrasena) {
@@ -156,7 +264,7 @@ export default function RegisterPage() {
         )}
 
         {step === 4 && (
-          <h1 className="auth-page-title">Verificación de Contraseña</h1>
+          <h1 className="auth-page-title">Creacion de Usuario y Contraseña</h1>
         )}
 
         {errorMessage && (
@@ -195,6 +303,8 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     placeholder="Número de documento"
                     className="bank-input doc-number-input"
+                    maxLength={9}
+                    inputMode="numeric"
                     required
                   />
                 </div>
@@ -231,8 +341,9 @@ export default function RegisterPage() {
                   name="fechaNacimiento"
                   value={formData.fechaNacimiento}
                   onChange={handleDateChange}
-                  placeholder="DD/MM/AA"
-                  maxLength={8}
+                  onBlur={handleDateBlur}
+                  placeholder="DD/MM/AAAA"
+                  maxLength={10}
                   className="bank-input"
                   required
                 />
@@ -259,16 +370,16 @@ export default function RegisterPage() {
               </div>
 
               <div className="bank-form-group">
-                <label className="bank-label" htmlFor="ocupacion">
-                  Ocupación
+                <label className="bank-label" htmlFor="direccion">
+                  Dirección
                 </label>
                 <input
                   type="text"
-                  id="ocupacion"
-                  name="ocupacion"
-                  value={formData.ocupacion}
+                  id="direccion"
+                  name="direccion"
+                  value={formData.direccion}
                   onChange={handleChange}
-                  placeholder="Ocupación"
+                  placeholder="Dirección"
                   className="bank-input"
                   required
                 />
@@ -306,6 +417,8 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     placeholder="Número de teléfono"
                     className="bank-input phone-number-input"
+                    maxLength={7}
+                    inputMode="numeric"
                     required
                   />
                 </div>
@@ -332,38 +445,100 @@ export default function RegisterPage() {
           {/* PASO 4: Seguridad */}
           {step === 4 && (
             <>
+
+              <div className="bank-form-group">
+                <label className="bank-label" htmlFor="usuario">
+                  Usuario
+                </label>
+                <input
+                  type="text"
+                  id="usuario"
+                  name="usuario"
+                  value={formData.usuario}
+                  onChange={handleChange}
+                  placeholder="Usuario"
+                  className="bank-input"
+                  autoComplete="username"
+                  required
+                />
+              </div>
+
               <div className="bank-form-group">
                 <label className="bank-label" htmlFor="contrasena">
                   Contraseña
                 </label>
-                <input
-                  type="password"
-                  id="contrasena"
-                  name="contrasena"
-                  value={formData.contrasena}
-                  onChange={handleChange}
-                  placeholder="Contraseña"
-                  className="bank-input"
-                  autoComplete="new-password"
-                  required
-                />
+                <div className="password-input-wrapper">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="contrasena"
+                    name="contrasena"
+                    value={formData.contrasena}
+                    onChange={handleChange}
+                    placeholder="Contraseña (6 a 16 caracteres)"
+                    className="bank-input"
+                    autoComplete="new-password"
+                    maxLength={16}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    title={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                    aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                  >
+                    {showPassword ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div className="bank-form-group">
                 <label className="bank-label" htmlFor="confirmarContrasena">
                   Confirmar Contraseña
                 </label>
-                <input
-                  type="password"
-                  id="confirmarContrasena"
-                  name="confirmarContrasena"
-                  value={formData.confirmarContrasena}
-                  onChange={handleChange}
-                  placeholder="Confirmar Contraseña"
-                  className="bank-input"
-                  autoComplete="new-password"
-                  required
-                />
+                <div className="password-input-wrapper">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    id="confirmarContrasena"
+                    name="confirmarContrasena"
+                    value={formData.confirmarContrasena}
+                    onChange={handleChange}
+                    placeholder="Confirmar Contraseña"
+                    className="bank-input"
+                    autoComplete="new-password"
+                    maxLength={16}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    title={showConfirmPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                    aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                  >
+                    {showConfirmPassword ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
             </>
           )}
@@ -391,7 +566,7 @@ export default function RegisterPage() {
               type="submit"
               className="bank-btn bank-btn-primary"
             >
-              {step === 4 ? 'Siguiente' : 'Siguiente'}
+              {step === 4 ? 'Registrarse' : 'Siguiente'}
             </button>
           </div>
         </form>
