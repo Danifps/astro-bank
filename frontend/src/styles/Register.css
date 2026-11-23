@@ -207,6 +207,127 @@
   background-color: var(--bg-muted);
 }
 
+/* ========================================================
+   ZONA DE CARGA DE DOCUMENTO (CÉDULA)
+   ======================================================== */
+.document-upload-zone {
+  position: relative;
+  width: 100%;
+}
+
+.document-file-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.document-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 16px;
+  background-color: var(--bg-secondary);
+  border: 1.5px dashed #94A3B8;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  gap: 5px;
+}
+
+.document-upload-label:hover {
+  background-color: #EEF4FF;
+  border-color: #0000FF;
+}
+
+.upload-icon {
+  color: #0000FF;
+  margin-bottom: 2px;
+}
+
+.upload-main-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.upload-sub-text {
+  font-size: 12px;
+  color: #64748B;
+}
+
+.document-file-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: #EEF4FF;
+  border: 1.5px solid #CBD5E1;
+  border-radius: var(--radius-md);
+}
+
+.document-file-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #0F172A;
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-check-icon {
+  color: #0000FF;
+  flex-shrink: 0;
+}
+
+.document-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 240px;
+}
+
+.document-remove-btn {
+  background: none;
+  border: none;
+  color: #EF4444;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  z-index: 5;
+}
+
+.document-remove-btn:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* Nota de Declaración Económica */
+.economic-declaration-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748B;
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+.economic-declaration-hint svg {
+  color: #0000FF;
+  flex-shrink: 0;
+}
+
 @media (max-width: 480px) {
   .step-actions-row {
     grid-template-columns: 1fr;

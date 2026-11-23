@@ -1,7 +1,6 @@
 import Navbar from './Navbar';
 import Footer from './Footer';
 import logotipoImg from '../assets/logotipo.png';
-import isotypeImg from '../assets/logo-Photoroom.png';
 import '../styles/AuthLayout.css';
 
 export default function AuthLayout({ children }) {

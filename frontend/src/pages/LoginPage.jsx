@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout';
 import '../styles/Login.css';
 
 export default function LoginPage() {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     usuarioOCedula: '',
     claveAcceso: ''

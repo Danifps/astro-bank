@@ -43,7 +43,7 @@
 
 .footer-copy {
   font-size: 12px;
-  color: #64748B;
+  color: #475569;
 }
 
 .footer-col-title {
@@ -96,5 +96,18 @@
 
   .bank-footer {
     padding: 32px 0 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-container {
+    padding: 0 20px;
+  }
+
+  .footer-logo-img {
+    height: 180px;
+    margin-top: -20px;
+    margin-bottom: -62px;
+    margin-left: -21px;
   }
 }

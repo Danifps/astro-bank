@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Upload, FileCheck, Info } from 'lucide-react';
 import AuthLayout from '../components/AuthLayout';
 import '../styles/Register.css';
 
@@ -10,18 +11,22 @@ export default function RegisterPage() {
   const [successModal, setSuccessModal] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [cedulaFileName, setCedulaFileName] = useState('');
 
   // Único estado JSON con todos los datos del formulario bancario
   const [formData, setFormData] = useState({
-    // Paso 1: Datos iniciales
+    // Paso 1: Datos iniciales y documento
     tipoDocumento: 'V',
     numeroDocumento: '',
+    archivoDocumento: null,
     nombresApellidos: '',
 
-    // Paso 2: Datos personales
+    // Paso 2: Datos personales y socioeconómicos
     fechaNacimiento: '',
     genero: '', // 'Hombre' | 'Mujer'
     direccion: '',
+    ocupacion: '', // Ocupación general (empleado, independiente, estudiante...)
+    rangoIngresos: '', // Rango aproximado de ingresos / movilización mensual
 
     // Paso 3: Contacto
     operadora: '0412',
@@ -33,6 +38,31 @@ export default function RegisterPage() {
     contrasena: '',
     confirmarContrasena: ''
   });
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setErrorMessage('El archivo no debe exceder los 5 MB.');
+        return;
+      }
+      setCedulaFileName(file.name);
+      setFormData((prev) => ({
+        ...prev,
+        archivoDocumento: file.name
+      }));
+      if (errorMessage) setErrorMessage('');
+    }
+  };
+
+  const handleRemoveFile = (e) => {
+    e.stopPropagation();
+    setCedulaFileName('');
+    setFormData((prev) => ({
+      ...prev,
+      archivoDocumento: null
+    }));
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -169,6 +199,10 @@ export default function RegisterPage() {
         setErrorMessage('El número de documento no puede tener más de 9 dígitos.');
         return false;
       }
+      if (!formData.archivoDocumento) {
+        setErrorMessage('Por favor suba una foto o copia de su cédula de identidad.');
+        return false;
+      }
       if (!formData.nombresApellidos.trim()) {
         setErrorMessage('Por favor ingrese sus nombres y apellidos completos.');
         return false;
@@ -185,6 +219,14 @@ export default function RegisterPage() {
       }
       if (!formData.direccion.trim()) {
         setErrorMessage('Por favor ingrese su dirección.');
+        return false;
+      }
+      if (!formData.ocupacion) {
+        setErrorMessage('Por favor seleccione su ocupación o actividad principal.');
+        return false;
+      }
+      if (!formData.rangoIngresos) {
+        setErrorMessage('Por favor seleccione su rango estimado de ingresos o movilización mensual.');
         return false;
       }
     } else if (step === 3) {
@@ -310,6 +352,45 @@ export default function RegisterPage() {
                 </div>
               </div>
 
+              {/* Subida de documento de identidad (Cédula) */}
+              <div className="bank-form-group">
+                <label className="bank-label">
+                  Cédula de identidad (Foto o PDF)
+                </label>
+                <div className="document-upload-zone">
+                  <input
+                    type="file"
+                    id="archivoDocumento"
+                    name="archivoDocumento"
+                    accept="image/*,.pdf"
+                    onChange={handleFileUpload}
+                    className="document-file-input"
+                  />
+                  {cedulaFileName ? (
+                    <div className="document-file-info">
+                      <div className="document-file-badge">
+                        <FileCheck size={20} className="file-check-icon" />
+                        <span className="document-file-name">{cedulaFileName}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleRemoveFile}
+                        className="document-remove-btn"
+                        title="Quitar archivo"
+                      >
+                        Quitar
+                      </button>
+                    </div>
+                  ) : (
+                    <label htmlFor="archivoDocumento" className="document-upload-label">
+                      <Upload size={22} className="upload-icon" />
+                      <span className="upload-main-text">Adjuntar foto o copia de cédula</span>
+                      <span className="upload-sub-text">Haz clic o arrastra aquí (JPG, PNG o PDF, máx. 5MB)</span>
+                    </label>
+                  )}
+                </div>
+              </div>
+
               <div className="bank-form-group">
                 <label className="bank-label" htmlFor="nombresApellidos">
                   Nombre completo
@@ -383,6 +464,54 @@ export default function RegisterPage() {
                   className="bank-input"
                   required
                 />
+              </div>
+
+              {/* Declaración económica general en formato de preguntas */}
+              <div className="bank-form-group">
+                <label className="bank-label" htmlFor="ocupacion">
+                  ¿Cuál es tu ocupación o actividad económica principal?
+                </label>
+                <select
+                  name="ocupacion"
+                  id="ocupacion"
+                  value={formData.ocupacion}
+                  onChange={handleChange}
+                  className="bank-select"
+                  required
+                >
+                  <option value="">Selecciona tu ocupación</option>
+                  <option value="Empleado">Empleado / Asalariado</option>
+                  <option value="Independiente">Independiente / Profesional Autónomo</option>
+                  <option value="Comerciante">Comerciante / Empresario</option>
+                  <option value="Estudiante">Estudiante</option>
+                  <option value="Jubilado">Jubilado / Pensionado</option>
+                  <option value="Otro">Otro / Sin empleo actual</option>
+                </select>
+              </div>
+
+              <div className="bank-form-group">
+                <label className="bank-label" htmlFor="rangoIngresos">
+                  ¿Cuál es tu rango aproximado de ingresos o movilización mensual esperada?
+                </label>
+                <select
+                  name="rangoIngresos"
+                  id="rangoIngresos"
+                  value={formData.rangoIngresos}
+                  onChange={handleChange}
+                  className="bank-select"
+                  required
+                >
+                  <option value="">Selecciona tu rango estimado</option>
+                  <option value="Menos de $150">Menos de $150 USD / mes (o equiv. en Bs)</option>
+                  <option value="$150 - $400">$150 a $400 USD / mes</option>
+                  <option value="$400 - $800">$400 a $800 USD / mes</option>
+                  <option value="$800 - $1,500">$800 a $1,500 USD / mes</option>
+                  <option value="Más de $1,500">Más de $1,500 USD / mes</option>
+                </select>
+                <span className="economic-declaration-hint">
+                  <Info size={14} />
+                  Declaración informativa referencial. No requieres adjuntar comprobantes ni balances.
+                </span>
               </div>
             </>
           )}
