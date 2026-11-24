@@ -1,0 +1,1742 @@
+/* ========================================================
+   ESTILOS GENERALES DEL DASHBOARD DE CLIENTE
+   ======================================================== */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #F8FAFC;
+  font-family: inherit;
+  color: #0F172A;
+}
+
+/* ========================================================
+   SIDEBAR LATERAL IZQUIERDO
+   ======================================================== */
+.dashboard-sidebar {
+  width: 270px;
+  background-color: #FFFFFF;
+  border-right: 1.5px solid #E2E8F0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 18px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  box-sizing: border-box;
+  z-index: 40;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dashboard-sidebar-top {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Logo en Sidebar */
+.dashboard-logo-container {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  height: 48px;
+  text-decoration: none;
+  position: relative;
+}
+
+.dashboard-logo-img {
+  height: 110px;
+  width: auto;
+  object-fit: contain;
+  margin-left: -12px;
+  display: block;
+}
+
+/* Navegación Principal */
+.dashboard-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dashboard-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 16px;
+  border-radius: 12px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #475569;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  border: 1.5px solid transparent;
+}
+
+.dashboard-nav-item:hover {
+  background-color: #F1F5F9;
+  color: #0F172A;
+}
+
+/* Elemento Activo (según boceto, Crédito está activo) */
+.dashboard-nav-item.active {
+  background-color: #EEF4FF;
+  color: #0000FF;
+  border-color: rgba(0, 0, 255, 0.15);
+  font-weight: 600;
+}
+
+.dashboard-nav-item.active .dashboard-nav-icon {
+  color: #0000FF;
+}
+
+.dashboard-nav-icon {
+  flex-shrink: 0;
+  color: #64748B;
+  transition: color 0.2s ease;
+}
+
+/* Navegación Inferior (Mi Perfil, Cerrar Sesión) */
+.dashboard-sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 18px;
+  border-top: 1.5px solid #F1F5F9;
+}
+
+.dashboard-nav-item.logout {
+  color: #64748B;
+}
+
+.dashboard-nav-item.logout:hover {
+  background-color: #FEF2F2;
+  color: #DC2626;
+  border-color: rgba(220, 38, 38, 0.15);
+}
+
+.dashboard-nav-item.logout:hover .dashboard-nav-icon {
+  color: #DC2626;
+}
+
+/* ========================================================
+   CONTENIDO PRINCIPAL
+   ======================================================== */
+.dashboard-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 100vh;
+}
+
+/* Header Superior */
+.dashboard-header {
+  height: 80px;
+  background-color: #FFFFFF;
+  border-bottom: 1.5px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 36px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  box-sizing: border-box;
+}
+
+.dashboard-greeting-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.dashboard-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Botón Notificaciones */
+.dashboard-notif-btn {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1.5px solid #E2E8F0;
+  background-color: #FFFFFF;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dashboard-notif-btn:hover {
+  background-color: #F8FAFC;
+  border-color: #0000FF;
+  color: #0000FF;
+}
+
+.dashboard-notif-badge {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #EF4444;
+  border: 1.5px solid #FFFFFF;
+}
+
+/* Perfil de Usuario */
+.dashboard-user-pill {
+  position: relative;
+}
+
+.dashboard-user-trigger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 14px 6px 8px;
+  background-color: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dashboard-user-trigger:hover,
+.dashboard-user-trigger.active {
+  border-color: #0000FF;
+  box-shadow: 0 2px 10px rgba(0, 0, 255, 0.08);
+}
+
+.dashboard-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #EEF4FF;
+  color: #0000FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dashboard-user-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0F172A;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-user-chevron {
+  color: #64748B;
+  transition: transform 0.2s ease;
+}
+
+.dashboard-user-chevron.rotated {
+  transform: rotate(180deg);
+}
+
+/* Menú desplegable del usuario */
+.dashboard-user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background-color: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.12);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 50;
+  animation: dropdownFadeIn 0.2s ease;
+}
+
+.dashboard-user-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #1E293B;
+  text-decoration: none;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.dashboard-user-dropdown-item:hover {
+  background-color: #F1F5F9;
+  color: #0000FF;
+}
+
+.dashboard-user-dropdown-item.danger:hover {
+  background-color: #FEF2F2;
+  color: #DC2626;
+}
+
+/* ========================================================
+   CUERPO DEL DASHBOARD (WIDGETS Y TABLAS)
+   ======================================================== */
+.dashboard-body {
+  padding: 32px 36px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  box-sizing: border-box;
+}
+
+/* Fila Superior: Crédito Activo + Próxima Cuota */
+.dashboard-top-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+}
+
+/* Tarjeta Base */
+.dashboard-card {
+  background-color: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 20px;
+  padding: 26px 28px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Tarjeta 1: Mi Crédito Activo */
+.credit-active-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.credit-active-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+}
+
+.credit-badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  background-color: #DCFCE7;
+  color: #166534;
+  border: 1px solid #86EFAC;
+}
+
+/* Billeteras y pestañas (General y Financiamiento) */
+.billeteras-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.billeteras-label {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #334155;
+  letter-spacing: -0.2px;
+}
+
+.billeteras-container .credit-tabs-row {
+  margin-bottom: 0;
+}
+
+.credit-tabs-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  background-color: #F8FAFC;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  margin-bottom: 20px;
+  width: fit-content;
+}
+
+/* Slider de Billeteras con animación de desplazamiento horizontal suave */
+.billetera-slider-viewport {
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+  border-radius: 8px;
+  min-height: 145px;
+}
+
+.billetera-slider-track {
+  display: flex;
+  width: 100%;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.billetera-slide {
+  flex: 0 0 100%;
+  min-width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.credit-tab-btn {
+  padding: 6px 16px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #64748B;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.credit-tab-btn:hover {
+  color: #0F172A;
+}
+
+.credit-tab-btn.active {
+  background-color: #FFFFFF;
+  color: #0000FF;
+  box-shadow: 0 2px 6px rgba(0, 0, 50, 0.08);
+  border-color: #E2E8F0;
+}
+
+.credit-line-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748B;
+  margin: 0 0 6px;
+}
+
+.credit-main-amount {
+  font-size: 34px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 14px;
+  letter-spacing: -0.5px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Barra de progreso de crédito */
+.credit-progress-bar-bg {
+  width: 100%;
+  height: 8px;
+  background-color: #E2E8F0;
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.credit-progress-bar-fill {
+  height: 100%;
+  background: #0000FF;
+  border-radius: 9999px;
+  transition: width 0.5s ease;
+}
+
+.credit-progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+.credit-progress-caption {
+  font-size: 12.5px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.credit-link-details {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0000FF;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Montserrat', sans-serif;
+  transition: all 0.2s ease;
+}
+
+.credit-link-details:hover {
+  text-decoration: underline;
+  gap: 7px;
+}
+
+/* Tarjeta 2: Tu próxima cuota */
+.cuota-card {
+  /* Sin raya lateral azul */
+}
+
+.cuota-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.cuota-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.cuota-badge-days {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  background-color: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+.cuota-label {
+  font-size: 13.5px;
+  color: #64748B;
+  margin: 8px 0 4px;
+  font-weight: 500;
+}
+
+.cuota-amount {
+  font-size: 30px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 6px;
+  letter-spacing: -0.5px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.cuota-deadline {
+  font-size: 13px;
+  color: #64748B;
+  margin-bottom: 22px;
+}
+
+.cuota-btn-pay {
+  width: 100%;
+  height: 46px;
+  background-color: #FFFFFF;
+  border: 1.8px solid #0F172A;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Montserrat', sans-serif;
+  color: #0F172A;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+}
+
+.cuota-btn-pay:hover {
+  background-color: #0000FF;
+  border-color: #0000FF;
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(0, 0, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.cuota-btn-pay:active {
+  transform: translateY(0);
+}
+
+/* ========================================================
+   SECCIÓN DE TABLAS: SOLICITUDES Y MOVIMIENTOS (INICIO)
+   ======================================================== */
+.inicio-section-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.inicio-section-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 19px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.dashboard-table-card {
+  background-color: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 20px;
+  padding: 24px 28px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+  box-sizing: border-box;
+}
+
+.dashboard-table-title {
+  font-size: 19px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 20px;
+  letter-spacing: -0.3px;
+}
+
+.table-responsive-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.dashboard-table th {
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-bottom: 1.5px solid #CBD5E1;
+  background-color: #F8FAFC;
+  text-align: center;
+}
+
+.dashboard-table th:first-child {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+.dashboard-table th:last-child {
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  text-align: center;
+}
+
+.dashboard-table td {
+  padding: 16px;
+  font-size: 14.5px;
+  color: #1E293B;
+  border-bottom: 1px solid #F1F5F9;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.dashboard-table td:last-child {
+  text-align: center;
+}
+
+.dashboard-table tr:hover td {
+  background-color: #F8FAFC;
+}
+
+/* Estilo para tipos de crédito / badges */
+.type-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #EEF4FF;
+  color: #0000FF;
+}
+
+.amount-text {
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.amount-income {
+  color: #16A34A;
+  font-weight: 700;
+}
+
+.amount-expense {
+  color: #DC2626;
+  font-weight: 700;
+}
+
+.action-link-btn {
+  background: none;
+  border: none;
+  color: #0000FF;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.action-link-btn:hover {
+  text-decoration: underline;
+  background-color: #EEF4FF;
+}
+
+/* ========================================================
+   FOOTER DEL DASHBOARD
+   ======================================================== */
+.dashboard-footer {
+  margin-top: 12px;
+  padding: 20px 8px 10px;
+  border-top: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #94A3B8;
+}
+
+/* ========================================================
+   VISTA DEDICADA: REGISTRAR PAGO (SEGÚN BOCETO)
+   ======================================================== */
+.registrar-pago-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: fadeIn 0.25s ease;
+}
+
+.registrar-pago-card {
+  background-color: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 20px;
+  padding: 34px 40px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  box-sizing: border-box;
+}
+
+.registrar-pago-lead {
+  font-size: 21px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.pago-section-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+}
+
+.pago-section-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+/* Encabezados y selector de cuota */
+.cuota-headers-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 0.8fr 1.2fr 36px;
+  padding: 0 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  text-align: center;
+}
+
+.cuota-selector-box {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 0.8fr 1.2fr 36px;
+  align-items: center;
+  padding: 13px 20px;
+  background-color: #FFFFFF;
+  border: 1.8px solid #0F172A;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0F172A;
+  transition: all 0.2s ease;
+}
+
+.cuota-selector-box:hover,
+.cuota-selector-box.active {
+  border-color: #0000FF;
+  box-shadow: 0 2px 10px rgba(0, 0, 255, 0.1);
+}
+
+.cuota-dropdown-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 6px;
+  background-color: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.15);
+  overflow: hidden;
+  z-index: 30;
+  animation: dropdownFadeIn 0.15s ease;
+}
+
+.cuota-dropdown-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 0.8fr 1.2fr 36px;
+  align-items: center;
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #F1F5F9;
+  cursor: pointer;
+  font-size: 13.5px;
+  color: #0F172A;
+  text-align: center;
+  transition: background-color 0.15s ease;
+}
+
+.cuota-dropdown-row:hover {
+  background-color: #F8FAFC;
+}
+
+.cuota-dropdown-row.selected {
+  background-color: #EEF4FF;
+  color: #0000FF;
+  font-weight: 700;
+}
+
+/* Selector de Método de Pago */
+.metodo-selector-box {
+  width: 100%;
+  padding: 13px 20px;
+  background-color: #FFFFFF;
+  border: 1.8px solid #0F172A;
+  border-radius: 12px;
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #0F172A;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.metodo-selector-box:hover {
+  border-color: #0000FF;
+  box-shadow: 0 2px 10px rgba(0, 0, 255, 0.1);
+}
+
+/* Cuerpo de dos columnas: Datos + Cargar Comprobante */
+.pago-columns-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 36px;
+  align-items: stretch;
+}
+
+.pago-left-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.pago-subtitulo {
+  font-size: 15.5px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+}
+
+.datos-bancarios-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 15px;
+  color: #1E293B;
+  line-height: 1.4;
+  padding-left: 2px;
+}
+
+.datos-bancarios-line {
+  margin: 0;
+}
+
+.verificacion-inputs-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.verificacion-field-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.verificacion-label-text {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0F172A;
+  min-width: 160px;
+}
+
+.verificacion-input-control {
+  flex: 1;
+  max-width: 250px;
+  padding: 8px 14px;
+  background-color: #FFFFFF;
+  border: 1.8px solid #0F172A;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #0F172A;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.verificacion-input-control:focus {
+  border-color: #0000FF;
+  box-shadow: 0 0 0 3px rgba(0, 0, 255, 0.1);
+}
+
+/* Dropzone Cargar comprobante */
+.comprobante-card-dropzone {
+  border: 1.8px solid #0F172A;
+  border-radius: 16px;
+  background-color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  min-height: 220px;
+  box-sizing: border-box;
+}
+
+.comprobante-card-dropzone:hover {
+  border-color: #0000FF;
+  background-color: #F8FAFC;
+  box-shadow: 0 4px 14px rgba(0, 0, 255, 0.08);
+}
+
+.comprobante-svg-icon {
+  width: 64px;
+  height: 64px;
+  color: #0000FF;
+  margin-bottom: 12px;
+}
+
+.comprobante-main-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 4px;
+}
+
+.comprobante-sub-text {
+  font-size: 12px;
+  color: #64748B;
+  margin: 0;
+}
+
+.comprobante-preview-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.comprobante-preview-img {
+  max-height: 120px;
+  max-width: 100%;
+  border-radius: 8px;
+  object-fit: contain;
+  border: 1px solid #CBD5E1;
+}
+
+/* Botón Comprobar Pago */
+.btn-comprobar-pago-main {
+  width: 100%;
+  padding: 16px;
+  background-color: #FFFFFF;
+  color: #0F172A;
+  border: 2px solid #0F172A;
+  border-radius: 14px;
+  font-size: 17.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: -0.2px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+}
+
+.btn-comprobar-pago-main:hover {
+  background-color: #0000FF;
+  border-color: #0000FF;
+  color: #FFFFFF;
+  box-shadow: 0 6px 20px rgba(0, 0, 255, 0.24);
+  transform: translateY(-1px);
+}
+
+.btn-comprobar-pago-main:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 960px) {
+  .pago-columns-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .cuota-headers-grid,
+  .cuota-selector-box,
+  .cuota-dropdown-row {
+    grid-template-columns: 1fr 1fr 1fr;
+    font-size: 12px;
+  }
+
+  .verificacion-field-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .verificacion-input-control {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+/* Voucher de Pago Exitoso */
+.payment-voucher-card {
+  background-color: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 20px;
+  padding: 40px 36px;
+  max-width: 620px;
+  margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+  text-align: center;
+}
+
+.payment-voucher-badge {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background-color: #DCFCE7;
+  color: #16A34A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+  border: 3px solid #BBF7D0;
+}
+
+.payment-voucher-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 6px;
+}
+
+.payment-voucher-desc {
+  font-size: 14.5px;
+  color: #64748B;
+  margin: 0 0 24px;
+}
+
+.payment-voucher-details {
+  background-color: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.voucher-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.voucher-detail-row span {
+  color: #64748B;
+}
+
+.voucher-detail-row strong {
+  color: #0F172A;
+  font-weight: 700;
+}
+
+.voucher-detail-row.highlight strong {
+  color: #0000FF;
+  font-size: 17px;
+}
+
+.voucher-detail-row.code strong {
+  font-family: monospace;
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 1080px) {
+  .payment-view-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========================================================
+   VISTA DEDICADA: PANTALLA DE CRÉDITO
+   ======================================================== */
+.credito-view-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: fadeIn 0.25s ease;
+}
+
+.credito-main-card {
+  background-color: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 20px;
+  padding: 34px 38px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  box-sizing: border-box;
+}
+
+.credito-hero-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding-bottom: 28px;
+  border-bottom: 1.5px solid #F1F5F9;
+}
+
+.credito-hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 280px;
+}
+
+.credito-hero-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.credito-hero-subtitle {
+  font-size: 15px;
+  color: #64748B;
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+.credito-lines-group {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.credito-line-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.credito-line-label {
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.credito-line-amount {
+  font-size: 34px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.6px;
+  line-height: 1.1;
+}
+
+.credito-hero-right {
+  display: flex;
+  align-items: flex-start;
+  padding-top: 10px;
+}
+
+.credito-btn-solicitar {
+  padding: 13px 32px;
+  background-color: #FFFFFF;
+  color: #0F172A;
+  border: 1.8px solid #0F172A;
+  border-radius: 12px;
+  font-size: 15.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+  white-space: nowrap;
+}
+
+.credito-btn-solicitar:hover {
+  background-color: #0000FF;
+  border-color: #0000FF;
+  color: #FFFFFF;
+  box-shadow: 0 6px 18px rgba(0, 0, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.credito-btn-solicitar:active {
+  transform: translateY(0);
+}
+
+.credito-table-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.credito-section-title {
+  font-size: 21px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+/* Badges de Estado */
+.status-badge-pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.status-badge-pill.enviado {
+  background-color: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+}
+
+.status-badge-pill.en-revisión,
+.status-badge-pill.en-revision,
+.status-badge-pill.en-evaluacion {
+  background-color: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+.status-badge-pill.aprobado,
+.status-badge-pill.vigente {
+  background-color: #DCFCE7;
+  color: #166534;
+  border: 1px solid #86EFAC;
+}
+
+.status-badge-pill.producto {
+  background-color: #F1F5F9;
+  color: #334155;
+  border: 1px solid #CBD5E1;
+}
+
+/* ========================================================
+   VISTA: TRANSACCIÓN (SEGÚN BOCETO)
+   ======================================================== */
+.transaccion-wrapper {
+  animation: fadeIn 0.25s ease;
+}
+
+.transaccion-card {
+  background-color: #FFFFFF;
+  border: 1.8px solid #0F172A;
+  border-radius: 20px;
+  padding: 36px 40px;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+}
+
+.transaccion-lead {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 24px;
+  letter-spacing: -0.2px;
+}
+
+.transaccion-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.transaccion-saldo-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.transaccion-saldo-text {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.transaccion-datos-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.transaccion-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 40px;
+  align-items: center;
+}
+
+.transaccion-inputs-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.transaccion-field-group {
+  width: 100%;
+}
+
+.transaccion-input-box {
+  width: 100%;
+  padding: 13px 18px;
+  background-color: #FFFFFF;
+  border: 1.8px solid #0F172A;
+  border-radius: 12px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14.5px;
+  color: #0F172A;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.transaccion-input-box::placeholder {
+  color: #94A3B8;
+}
+
+.transaccion-input-box:focus {
+  border-color: #0000FF;
+  box-shadow: 0 0 0 3px rgba(0, 0, 255, 0.1);
+}
+
+.transaccion-input-box.select {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.transaccion-doc-compound {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.transaccion-doc-prefix {
+  width: 72px;
+  padding: 13px 14px;
+  background-color: #FFFFFF;
+  border: 1.8px solid #0F172A;
+  border-radius: 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0F172A;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.transaccion-doc-prefix:focus {
+  border-color: #0000FF;
+  box-shadow: 0 0 0 3px rgba(0, 0, 255, 0.1);
+}
+
+.transaccion-brand-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+}
+
+.transaccion-brand-watermark {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  user-select: none;
+}
+
+.transaccion-brand-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 38px;
+  font-weight: 900;
+  color: #0000FF;
+  letter-spacing: -0.5px;
+}
+
+.transaccion-brand-star-svg {
+  width: 70px;
+  height: 70px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 255, 0.2));
+}
+
+.transaccion-actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 14px;
+}
+
+.btn-hacer-pago,
+.btn-limpiar-campos {
+  width: 100%;
+  padding: 14px 24px;
+  border: 1.8px solid #0F172A;
+  border-radius: 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  background-color: #FFFFFF;
+  color: #0F172A;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+}
+
+.btn-hacer-pago:hover {
+  background-color: #0000FF;
+  border-color: #0000FF;
+  color: #FFFFFF;
+  box-shadow: 0 6px 20px rgba(0, 0, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.btn-hacer-pago:active {
+  transform: translateY(0);
+}
+
+.btn-limpiar-campos:hover {
+  background-color: #F8FAFC;
+  border-color: #64748B;
+  color: #0F172A;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+
+.btn-limpiar-campos:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 960px) {
+  .transaccion-card {
+    padding: 24px 20px;
+  }
+
+  .transaccion-grid-2col {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .transaccion-brand-col {
+    min-height: 100px;
+    padding: 12px 0;
+  }
+
+  .transaccion-brand-title {
+    font-size: 28px;
+  }
+
+  .transaccion-brand-star-svg {
+    width: 50px;
+    height: 50px;
+  }
+
+  .transaccion-actions-row {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+/* ========================================================
+   VISTA: HISTORIAL DE MOVIMIENTOS (SEGÚN BOCETO)
+   ======================================================== */
+.historial-wrapper {
+  animation: fadeIn 0.25s ease;
+}
+
+.historial-card {
+  background-color: #FFFFFF;
+  border: 1.8px solid #0F172A;
+  border-radius: 20px;
+  padding: 36px 40px;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+}
+
+.historial-lead {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 24px;
+  letter-spacing: -0.2px;
+}
+
+.historial-table-box {
+  border: 1.8px solid #0F172A;
+  border-radius: 16px;
+  background-color: #FFFFFF;
+  min-height: 460px;
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.historial-table-box .dashboard-table th {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  text-align: center;
+  padding: 14px 16px;
+  border-bottom: 1.5px solid #E2E8F0;
+}
+
+.historial-table-box .dashboard-table td {
+  padding: 16px;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 14.5px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.historial-table-box .dashboard-table tbody tr:hover {
+  background-color: #F8FAFC;
+}
+
+.monto-historial-green {
+  color: #16A34A;
+  font-weight: 700;
+}
+
+.monto-historial-dark {
+  color: #0F172A;
+  font-weight: 700;
+}
+
+.estado-badge-historial {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.estado-badge-historial.transacción,
+.estado-badge-historial.transaccion {
+  background-color: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+}
+
+.estado-badge-historial.registro-de-pago {
+  background-color: #DCFCE7;
+  color: #166534;
+  border: 1px solid #86EFAC;
+}
+
+.estado-badge-historial.crédito,
+.estado-badge-historial.credito {
+  background-color: #F3E8FF;
+  color: #6B21A8;
+  border: 1px solid #D8B4FE;
+}
+
+@media (max-width: 960px) {
+  .historial-card {
+    padding: 24px 18px;
+  }
+
+  .historial-table-box {
+    padding: 8px;
+    min-height: auto;
+  }
+}
+
+/* ========================================================
+   MODALES (REGISTRAR PAGO Y DETALLES)
+   ======================================================== */
+.dashboard-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+.dashboard-modal-card {
+  background-color: #FFFFFF;
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
+  border: 1.5px solid #E2E8F0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: scaleUp 0.25s ease;
+  position: relative;
+}
+
+.dashboard-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dashboard-modal-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+}
+
+.dashboard-modal-close {
+  background: none;
+  border: none;
+  color: #64748B;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.dashboard-modal-close:hover {
+  background-color: #F1F5F9;
+  color: #0F172A;
+}
+
+/* Responsive */
+@media (max-width: 1080px) {
+  .dashboard-top-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-sidebar {
+    position: fixed;
+    left: -270px;
+  }
+
+  .dashboard-sidebar.mobile-open {
+    transform: translateX(270px);
+  }
+
+  .dashboard-header {
+    padding: 0 18px;
+  }
+
+  .dashboard-greeting-title {
+    font-size: 16px;
+  }
+
+  .dashboard-body {
+    padding: 20px 16px 36px;
+  }
+
+  .dashboard-user-name {
+    display: none;
+  }
+}

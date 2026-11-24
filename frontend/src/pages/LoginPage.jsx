@@ -27,8 +27,7 @@ export default function LoginPage() {
     }
 
     console.log('Login payload preparado para backend:', formData);
-    // Simulación de éxito o feedback visual
-    alert(`Bienvenido a Astro Bank: ${formData.usuarioOCedula}`);
+    navigate('/dashboard');
   };
 
   return (
