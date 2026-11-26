@@ -1,20 +1,17 @@
 import crypto from 'node:crypto';
 import cors from 'cors';
+import mongoose from 'mongoose';
 import { BlacklistedAddress } from '../models/BlacklistedAddress.js';
 
 const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 const SESSION_TTL_MS = 5 * 60 * 1000; // 5 minutos máximos de sesión activa
-const MAX_LOGIN_FAILURES = 5;
-
-/**
- * Duraciones de bloqueo progresivo (exponential backoff) por IP:
- * 1er bloqueo → 1 min | 2do → 5 min | 3ro → 30 min | 4to+ → ban permanente
- */
-const BLOCK_DURATIONS_MS = [
-  1 * 60 * 1000,
-  5 * 60 * 1000,
-  30 * 60 * 1000
-];
+const SESSION_COOKIE_NAME = 'astro_session';
+const LOGIN_FAILURE_LIMIT = 5;
+const LOGIN_FAILURE_WINDOW_MS = 15 * 60 * 1000;
+const ATTACK_STRIKE_LIMIT = 3;
+const ATTACK_STRIKE_WINDOW_MS = 24 * 60 * 60 * 1000;
+const RATE_LIMIT_COLLECTION = 'security_rate_limits';
+const PERMANENT_BLOCK_REASON = 'Repeated forbidden MongoDB operator or prototype keys';
 
 /**
  * SESSION_SECRET se obtiene de forma lazy para ser compatible con dotenv.
@@ -48,14 +45,41 @@ function getSessionSecret() {
  */
 export function validateSecurityConfig() {
   const secret = process.env.SESSION_SECRET;
-  if (!secret || secret.length < 32) {
-    if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production') {
+    if (!secret || secret.length < 32) {
       throw new Error(
         '[SEGURIDAD CRÍTICA] SESSION_SECRET no está configurada correctamente. ' +
         'Mínimo 32 caracteres. El servidor se detiene por seguridad.'
       );
     }
-    console.warn('[SEGURIDAD] ⚠️  SESSION_SECRET no configurada. No es seguro para producción.');
+
+    const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean);
+    const hasInvalidOrigin = allowedOrigins.some((origin) => {
+      try {
+        const parsedOrigin = new URL(origin);
+        return parsedOrigin.protocol !== 'https:' || parsedOrigin.origin !== origin;
+      } catch {
+        return true;
+      }
+    });
+    if (allowedOrigins.length === 0 || hasInvalidOrigin) {
+      throw new Error('[SEGURIDAD CRÍTICA] Configura ALLOWED_ORIGINS con orígenes HTTPS en producción.');
+    }
+    const trustedProxies = (process.env.TRUST_PROXY || '').trim();
+    if (!trustedProxies || ['true', 'false'].includes(trustedProxies.toLowerCase())) {
+      throw new Error('[SEGURIDAD CRÍTICA] Configura TRUST_PROXY con las IPs o subredes de los proxies confiables.');
+    }
+    if (!process.env.MONGODB_URI) {
+      throw new Error('[SEGURIDAD CRÍTICA] MONGODB_URI debe configurarse en producción.');
+    }
+    return;
+  }
+
+  if (!secret || secret.length < 32) {
+    console.warn('[SEGURIDAD] ⚠️  SESSION_SECRET no configurada. Se usarán sesiones temporales solo para desarrollo.');
   }
 }
 
@@ -103,6 +127,25 @@ function hasDangerousCode(value) {
   return false;
 }
 
+function hasForbiddenOperatorKey(value) {
+  if (Array.isArray(value)) {
+    return value.some(hasForbiddenOperatorKey);
+  }
+
+  if (value && typeof value === 'object') {
+    for (const [key, nested] of Object.entries(value)) {
+      if (FORBIDDEN_KEYS.has(key) || key.startsWith('$') || key.includes('.')) {
+        return true;
+      }
+      if (hasForbiddenOperatorKey(nested)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 function sanitizeValue(value) {
   if (Array.isArray(value)) {
     return value.map(sanitizeValue);
@@ -133,109 +176,133 @@ function sanitizeInPlace(target) {
   }
 }
 
-// Registro de intentos fallidos consecutivos de login por IP
-// Estado: { failures, blockedUntil, blockCount, lastAttemptAt }
-const loginAttemptsByIp = new Map();
+export async function initializeSecurityCollections() {
+  const collection = mongoose.connection.collection(RATE_LIMIT_COLLECTION);
+  await collection.createIndex({ key: 1 }, { unique: true, name: 'unique_security_rate_key' });
+  await collection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0, name: 'security_rate_ttl' });
+}
 
-const loginCleanupTimer = setInterval(() => {
-  const now = Date.now();
-  for (const [ip, state] of loginAttemptsByIp.entries()) {
-    const isBlockedExpired = state.blockedUntil && state.blockedUntil <= now;
-    const isStale = now - state.lastAttemptAt > 60 * 60 * 1000; // 1 hora sin actividad
-    if (isBlockedExpired || (!state.blockedUntil && isStale)) {
-      loginAttemptsByIp.delete(ip);
+async function incrementSecurityCounter(key, windowMs) {
+  const collection = mongoose.connection.collection(RATE_LIMIT_COLLECTION);
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + windowMs);
+  const update = [{
+    $set: {
+      count: {
+        $cond: [
+          { $gt: ['$expiresAt', now] },
+          { $add: [{ $ifNull: ['$count', 0] }, 1] },
+          1
+        ]
+      },
+      expiresAt: {
+        $cond: [
+          { $gt: ['$expiresAt', now] },
+          '$expiresAt',
+          expiresAt
+        ]
+      }
     }
+  }];
+
+  try {
+    const result = await collection.findOneAndUpdate(
+      { key },
+      update,
+      { upsert: true, returnDocument: 'after' }
+    );
+    return result?.value || result;
+  } catch (error) {
+    if (error?.code !== 11000) throw error;
+
+    const result = await collection.findOneAndUpdate(
+      { key },
+      update,
+      { returnDocument: 'after' }
+    );
+    return result?.value || result;
   }
-}, 60 * 1000);
-loginCleanupTimer.unref();
+}
 
 /**
  * Middleware que bloquea cualquier IP con bloqueo temporal activo.
  */
-export function checkLoginIpBlock(req, res, next) {
+export async function checkLoginIpBlock(req, res, next) {
   const ip = getClientIp(req);
-  const state = loginAttemptsByIp.get(ip);
-  const now = Date.now();
-
-  if (state?.blockedUntil && state.blockedUntil > now) {
-    const segundosRestantes = Math.max(1, Math.ceil((state.blockedUntil - now) / 1000));
-    res.setHeader('Retry-After', String(segundosRestantes));
-    return res.status(429).json({
-      ok: false,
-      bloqueado: true,
-      segundosRestantes,
-      mensaje: `Demasiados intentos fallidos. Tu IP está bloqueada por ${segundosRestantes} segundos más.`
+  try {
+    const entry = await mongoose.connection.collection(RATE_LIMIT_COLLECTION).findOne({
+      key: `login-failures:${ip}`
     });
-  }
+    const now = Date.now();
 
-  if (state?.blockedUntil && state.blockedUntil <= now) {
-    // El bloqueo temporal expiró; reiniciar failures pero conservar blockCount
-    loginAttemptsByIp.set(ip, {
-      failures: 0,
-      blockedUntil: null,
-      blockCount: state.blockCount || 0,
-      lastAttemptAt: state.lastAttemptAt
-    });
-  }
-
-  return next();
-}
-
-/**
- * Registra un fallo de login con bloqueo progresivo (exponential backoff).
- * Tras BLOCK_DURATIONS_MS.length bloques → ban permanente en MongoDB.
- */
-export async function registerFailedLoginAttempt(req) {
-  const ip = getClientIp(req);
-  const mac = getClientMac(req);
-  const now = Date.now();
-  const prev = loginAttemptsByIp.get(ip);
-
-  const blockCount = prev?.blockCount || 0;
-  const failures = (prev && !prev.blockedUntil ? prev.failures : 0) + 1;
-
-  if (failures >= MAX_LOGIN_FAILURES) {
-    // ¿Ya superó todos los bloqueos temporales? → ban permanente
-    if (blockCount >= BLOCK_DURATIONS_MS.length) {
-      await blockAddressPermanently(ip, mac, `Ban permanente tras ${blockCount + 1} ciclos de bloqueo por fuerza bruta`, req);
-      loginAttemptsByIp.delete(ip);
-      return { blocked: true, permanent: true, attemptsLeft: 0, retryAfterSeconds: 0 };
+    if (entry?.count >= LOGIN_FAILURE_LIMIT && entry.expiresAt.getTime() > now) {
+      const secondsRemaining = Math.max(1, Math.ceil((entry.expiresAt.getTime() - now) / 1000));
+      res.setHeader('Retry-After', String(secondsRemaining));
+      return res.status(429).json({
+        ok: false,
+        bloqueado: true,
+        segundosRestantes: secondsRemaining,
+        mensaje: `Demasiados intentos fallidos. Reintenta en ${secondsRemaining} segundos.`
+      });
     }
 
-    const blockDuration = BLOCK_DURATIONS_MS[blockCount];
-    const blockedUntil = now + blockDuration;
-    loginAttemptsByIp.set(ip, {
-      failures: 0,
-      blockedUntil,
-      blockCount: blockCount + 1,
-      lastAttemptAt: now
+    return next();
+  } catch (error) {
+    logError('login rate-limit check', error);
+    return res.status(503).json({
+      ok: false,
+      mensaje: 'El servicio de autenticación no está disponible temporalmente.'
     });
-
-    return {
-      blocked: true,
-      permanent: false,
-      attemptsLeft: 0,
-      retryAfterSeconds: Math.ceil(blockDuration / 1000)
-    };
   }
+}
 
-  loginAttemptsByIp.set(ip, {
-    failures,
-    blockedUntil: null,
-    blockCount,
-    lastAttemptAt: now
-  });
-
+export async function registerFailedLoginAttempt(req) {
+  const ip = getClientIp(req);
+  const entry = await incrementSecurityCounter(`login-failures:${ip}`, LOGIN_FAILURE_WINDOW_MS);
+  const attempts = entry.count;
+  const retryAfterSeconds = Math.max(1, Math.ceil((entry.expiresAt.getTime() - Date.now()) / 1000));
   return {
-    blocked: false,
+    blocked: attempts >= LOGIN_FAILURE_LIMIT,
     permanent: false,
-    attemptsLeft: MAX_LOGIN_FAILURES - failures,
-    retryAfterSeconds: 0
+    attemptsLeft: Math.max(0, LOGIN_FAILURE_LIMIT - attempts),
+    retryAfterSeconds: attempts >= LOGIN_FAILURE_LIMIT ? retryAfterSeconds : 0
   };
 }
 
-export function clearFailedLoginAttempts(req) {
-  loginAttemptsByIp.delete(getClientIp(req));
+export async function clearFailedLoginAttempts(req) {
+  await mongoose.connection.collection(RATE_LIMIT_COLLECTION).deleteOne({
+    key: `login-failures:${getClientIp(req)}`
+  });
+}
+
+export function setSessionCookie(res, token) {
+  res.cookie(SESSION_COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: SESSION_TTL_MS,
+    path: '/api'
+  });
+}
+
+export function clearSessionCookie(res) {
+  res.clearCookie(SESSION_COOKIE_NAME, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/api'
+  });
+}
+
+export function requireTrustedOrigin(req, res, next) {
+  const origin = req.get('origin');
+  if (!origin || !getAllowedOrigins().has(origin)) {
+    return res.status(403).json({
+      ok: false,
+      mensaje: 'Origen no autorizado.'
+    });
+  }
+  return next();
 }
 
 /**
@@ -306,8 +373,10 @@ export function verifySessionToken(token, clientIp) {
 }
 
 export function requireActiveSession(req, res, next) {
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+  const cookieHeader = req.headers.cookie || '';
+  const tokenCookie = cookieHeader.split(';').map((part) => part.trim())
+    .find((part) => part.startsWith(`${SESSION_COOKIE_NAME}=`));
+  const token = tokenCookie ? tokenCookie.slice(SESSION_COOKIE_NAME.length + 1) : '';
   const clientIp = getClientIp(req);
   const result = verifySessionToken(token, clientIp);
 
@@ -350,21 +419,22 @@ export function securityHeaders(_req, res, next) {
 /**
  * Configuración estricta de CORS basada en lista blanca de orígenes.
  */
-export function createCorsMiddleware() {
+function getAllowedOrigins() {
   const defaultOrigins = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
     'http://localhost:4173',
     'http://127.0.0.1:4173'
   ];
-
   const envOrigins = (process.env.ALLOWED_ORIGINS || '')
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
+  return new Set(envOrigins.length > 0 ? envOrigins : defaultOrigins);
+}
 
-  const allowedOrigins = new Set(envOrigins.length > 0 ? envOrigins : defaultOrigins);
-
+export function createCorsMiddleware() {
+  const allowedOrigins = getAllowedOrigins();
   return cors({
     origin(origin, callback) {
       if (!origin || allowedOrigins.has(origin)) {
@@ -375,7 +445,8 @@ export function createCorsMiddleware() {
       return callback(err);
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type'],
+    credentials: true,
     maxAge: 86400
   });
 }
@@ -383,12 +454,35 @@ export function createCorsMiddleware() {
 /**
  * Rechaza código SQL/script e inyección NoSQL en cualquier entrada antes de llegar a la BD.
  */
-export function sanitizeInput(req, res, next) {
+export async function sanitizeInput(req, res, next) {
+  const bodyHasForbiddenKeys = hasForbiddenOperatorKey(req.body);
   if (
     hasDangerousCode(req.body) ||
     hasDangerousCode(req.params) ||
     hasDangerousCode(req.query)
   ) {
+    if (bodyHasForbiddenKeys) {
+      try {
+        const entry = await incrementSecurityCounter(
+          `operator-injection:${getClientIp(req)}`,
+          ATTACK_STRIKE_WINDOW_MS
+        );
+        if (entry.count >= ATTACK_STRIKE_LIMIT) {
+          await blockAddressPermanently(
+            getClientIp(req),
+            PERMANENT_BLOCK_REASON,
+            req
+          );
+        }
+      } catch (error) {
+        logError('suspicious input tracking', error);
+        return res.status(503).json({
+          ok: false,
+          mensaje: 'La validación de seguridad no está disponible temporalmente.'
+        });
+      }
+    }
+
     return res.status(400).json({
       ok: false,
       mensaje: 'Entrada rechazada por seguridad: no se permite ingresar código SQL ni operadores peligrosos.'
@@ -404,51 +498,38 @@ export function sanitizeInput(req, res, next) {
 }
 
 /**
- * Limitador de tasa en memoria por IP (listo para reemplazar por Redis al escalar horizontalmente).
+ * Limitador persistente por IP, compartido entre procesos mediante MongoDB.
  */
-export function createRateLimiter({ windowMs, max, message }) {
-  const hits = new Map();
+export function createRateLimiter({ keyPrefix = 'api', windowMs, max, message }) {
+  return async (req, res, next) => {
+    try {
+      const entry = await incrementSecurityCounter(
+        `rate:${keyPrefix}:${getClientIp(req)}`,
+        windowMs
+      );
+      const remaining = Math.max(0, max - entry.count);
+      const retryAfterSec = Math.max(1, Math.ceil((entry.expiresAt.getTime() - Date.now()) / 1000));
 
-  const cleanupTimer = setInterval(() => {
-    const now = Date.now();
-    for (const [key, entry] of hits.entries()) {
-      if (entry.resetAt <= now) {
-        hits.delete(key);
-      }
-    }
-  }, windowMs);
-
-  cleanupTimer.unref();
-
-  return (req, res, next) => {
-    const key = getClientIp(req);
-    const now = Date.now();
-    const existing = hits.get(key);
-
-    if (!existing || existing.resetAt <= now) {
-      hits.set(key, { count: 1, resetAt: now + windowMs });
       res.setHeader('RateLimit-Limit', String(max));
-      res.setHeader('RateLimit-Remaining', String(Math.max(0, max - 1)));
+      res.setHeader('RateLimit-Remaining', String(remaining));
+      res.setHeader('RateLimit-Reset', String(retryAfterSec));
+
+      if (entry.count > max) {
+        res.setHeader('Retry-After', String(retryAfterSec));
+        return res.status(429).json({
+          ok: false,
+          mensaje: message || 'Demasiadas solicitudes. Intenta nuevamente más tarde.'
+        });
+      }
+
       return next();
-    }
-
-    existing.count += 1;
-    const remaining = Math.max(0, max - existing.count);
-    const retryAfterSec = Math.max(1, Math.ceil((existing.resetAt - now) / 1000));
-
-    res.setHeader('RateLimit-Limit', String(max));
-    res.setHeader('RateLimit-Remaining', String(remaining));
-    res.setHeader('RateLimit-Reset', String(retryAfterSec));
-
-    if (existing.count > max) {
-      res.setHeader('Retry-After', String(retryAfterSec));
-      return res.status(429).json({
+    } catch (error) {
+      logError('persistent rate limiter', error);
+      return res.status(503).json({
         ok: false,
-        mensaje: message || 'Demasiadas solicitudes. Intenta nuevamente más tarde.'
+        mensaje: 'El servicio de control de solicitudes no está disponible temporalmente.'
       });
     }
-
-    return next();
   };
 }
 
@@ -478,22 +559,6 @@ export function bodyParserErrorHandler(err, _req, res, next) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Rutas legítimas de la API. Cualquier petición fuera de esta lista
- * se considera un intento de acceso por puerta trasera y se bloquea
- * permanentemente registrando la IP y la MAC del atacante en MongoDB.
- */
-const RUTAS_PERMITIDAS = new Set([
-  '/api/auth/login',
-  '/api/auth/register',
-  '/api/auth/session',
-  '/api/v1/auth/login',
-  '/api/v1/auth/register',
-  '/api/v1/auth/session',
-  '/api/admin/blacklist',
-  '/health'
-]);
-
-/**
  * Cache en memoria de IPs ya bloqueadas para no consultar MongoDB en cada petición.
  * Se recarga desde la BD al arrancar el servidor.
  */
@@ -505,7 +570,7 @@ const ipBlacklistCache = new Set();
  */
 export async function loadBlacklistCache() {
   try {
-    const bloqueadas = await BlacklistedAddress.find({}, 'ip').lean();
+    const bloqueadas = await BlacklistedAddress.find({ motivo: PERMANENT_BLOCK_REASON }, 'ip').lean();
     for (const doc of bloqueadas) {
       ipBlacklistCache.add(doc.ip);
     }
@@ -514,7 +579,7 @@ export async function loadBlacklistCache() {
     // Refrescar el cache cada 60 segundos para sincronizar entre múltiples instancias
     const refreshTimer = setInterval(async () => {
       try {
-        const actualizadas = await BlacklistedAddress.find({}, 'ip').lean();
+        const actualizadas = await BlacklistedAddress.find({ motivo: PERMANENT_BLOCK_REASON }, 'ip').lean();
         ipBlacklistCache.clear();
         for (const doc of actualizadas) {
           ipBlacklistCache.add(doc.ip);
@@ -526,6 +591,7 @@ export async function loadBlacklistCache() {
     refreshTimer.unref();
   } catch (err) {
     console.error('[SEGURIDAD] Error cargando cache de bloqueo:', err.message);
+    throw err;
   }
 }
 
@@ -542,23 +608,9 @@ export function logError(context, err) {
 }
 
 /**
- * Extrae la dirección MAC del header X-Client-MAC enviado por el cliente,
- * o la del header Forwarded/X-Forwarded-For como aproximación de red.
- * Nota: las MACs solo se transmiten dentro de la misma red local;
- * para redes remotas se registra lo que el cliente declare.
+ * Bloquea permanentemente una IP en MongoDB + cache.
  */
-function getClientMac(req) {
-  const mac = req.headers['x-client-mac'] || req.headers['x-mac-address'] || null;
-  if (!mac) return null;
-  // Validar formato básico de MAC (xx:xx:xx:xx:xx:xx o xx-xx-xx-xx-xx-xx)
-  const macRegex = /^([0-9a-fA-F]{2}[:\-]){5}[0-9a-fA-F]{2}$/;
-  return macRegex.test(mac.trim()) ? mac.trim().toUpperCase() : null;
-}
-
-/**
- * Bloquea permanentemente una IP (y MAC si está disponible) en MongoDB + cache.
- */
-async function blockAddressPermanently(ip, mac, motivo, req) {
+async function blockAddressPermanently(ip, motivo, req) {
   // Agregar al cache inmediatamente para bloquear las siguientes peticiones sin ir a BD
   ipBlacklistCache.add(ip);
 
@@ -570,35 +622,37 @@ async function blockAddressPermanently(ip, mac, motivo, req) {
     await BlacklistedAddress.findOneAndUpdate(
       { ip },
       {
-        $set: { mac: mac || null, motivo, rutaIntentada, metodo, userAgent },
+        $set: { mac: null, motivo, rutaIntentada, metodo, userAgent },
         $inc: { intentos: 1 },
         $setOnInsert: { bloqueadoEn: new Date() }
       },
       { upsert: true, new: true }
     );
     console.warn(
-      `[SEGURIDAD] 🚫 BLOQUEO PERMANENTE — IP: ${ip}${mac ? ' | MAC: ' + mac : ''} | Motivo: ${motivo} | Ruta: ${rutaIntentada}`
+      `[SEGURIDAD] 🚫 BLOQUEO PERMANENTE — IP: ${ip} | Motivo: ${motivo} | Ruta: ${rutaIntentada}`
     );
   } catch (err) {
+    ipBlacklistCache.delete(ip);
     console.error('[SEGURIDAD] Error al persistir bloqueo en MongoDB:', err.message);
+    throw err;
   }
 }
 
-/**
- * Prefijos de rutas permitidas para soportar segmentos dinámicos (ej. :ip).
- */
-const PREFIJOS_PERMITIDOS = [
-  '/api/admin/blacklist'
-];
+export async function removeBlacklistedAddress(ip) {
+  const result = await BlacklistedAddress.deleteOne({ ip });
+  if (result.deletedCount > 0) {
+    ipBlacklistCache.delete(ip);
+  }
+  return result;
+}
 
 /**
  * Middleware principal anti-backdoor.
  * - Bloquea al instante cualquier IP ya en lista negra.
- * - Detecta accesos a rutas fuera de la API legítima y los bloquea permanentemente.
+ * - Deja las rutas desconocidas en manos del manejador 404 normal.
  */
 export async function backdoorBlocker(req, res, next) {
   const ip = getClientIp(req);
-  const mac = getClientMac(req);
 
   // 1. ¿La IP ya está bloqueada permanentemente?
   if (ipBlacklistCache.has(ip)) {
@@ -607,24 +661,6 @@ export async function backdoorBlocker(req, res, next) {
       ok: false,
       bloqueado: true,
       mensaje: 'Tu dirección ha sido bloqueada permanentemente por actividad sospechosa. Contacta al administrador del sistema.'
-    });
-  }
-
-  // 2. ¿Es una ruta legítima?
-  const rutaBase = req.path || req.url?.split('?')[0];
-  const esPermitida =
-    RUTAS_PERMITIDAS.has(rutaBase) ||
-    PREFIJOS_PERMITIDOS.some((prefijo) => rutaBase.startsWith(prefijo));
-
-  if (!esPermitida) {
-    // Es un intento de acceso a ruta desconocida → tratar como backdoor
-    const motivo = `Intento de acceso a ruta no autorizada: ${rutaBase}`;
-    await blockAddressPermanently(ip, mac, motivo, req);
-
-    return res.status(403).json({
-      ok: false,
-      bloqueado: true,
-      mensaje: 'Acceso no autorizado. Tu dirección IP y MAC han sido registradas y bloqueadas permanentemente.'
     });
   }
 
@@ -638,7 +674,6 @@ export async function backdoorBlocker(req, res, next) {
  */
 export async function sessionIntegrityGuard(req, res, next) {
   const ip = getClientIp(req);
-  const mac = getClientMac(req);
 
   // Si ya está bloqueada, cortar inmediatamente
   if (ipBlacklistCache.has(ip)) {
@@ -653,20 +688,16 @@ export async function sessionIntegrityGuard(req, res, next) {
   const suspiciousHeaders = [
     'x-original-url',
     'x-rewrite-url',
-    'x-forwarded-host',
-    'x-host',
     'x-custom-ip-authorization',
     'x-originating-ip'
   ];
 
   const suspiciousFound = suspiciousHeaders.filter((h) => req.headers[h]);
   if (suspiciousFound.length > 0) {
-    const motivo = `Headers de proxy/exploit sospechosos detectados: ${suspiciousFound.join(', ')}`;
-    await blockAddressPermanently(ip, mac, motivo, req);
-    return res.status(403).json({
+    console.warn(`[SEGURIDAD] Encabezados no permitidos de ${ip}: ${suspiciousFound.join(', ')}`);
+    return res.status(400).json({
       ok: false,
-      bloqueado: true,
-      mensaje: 'Actividad sospechosa detectada. Tu dirección ha sido bloqueada permanentemente.'
+      mensaje: 'La solicitud contiene encabezados no permitidos.'
     });
   }
 

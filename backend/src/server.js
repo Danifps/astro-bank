@@ -9,6 +9,7 @@ import {
   createCorsMiddleware,
   sanitizeInput,
   createRateLimiter,
+  initializeSecurityCollections,
   bodyParserErrorHandler,
   notFoundHandler,
   globalErrorHandler,
@@ -21,10 +22,22 @@ import {
 
 const app = express();
 const port = Number(process.env.PORT) || 4000;
+const configuredTrustProxy = process.env.TRUST_PROXY;
 
 // Endurecimiento básico de Express
 app.disable('x-powered-by');
-app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? 1 : false);
+app.set('trust proxy', !configuredTrustProxy || configuredTrustProxy === 'false'
+  ? false
+  : configuredTrustProxy);
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV === 'production' && !req.secure) {
+    return res.status(426).json({
+      ok: false,
+      mensaje: 'El servicio requiere una conexión HTTPS.'
+    });
+  }
+  return next();
+});
 
 // Capas globales de seguridad
 app.use(securityHeaders);
@@ -41,12 +54,14 @@ app.use(backdoorBlocker);        // Bloquea rutas fuera de la lista blanca
 
 // Control de tráfico para estabilidad y protección contra fuerza bruta
 const apiLimiter = createRateLimiter({
+  keyPrefix: 'api',
   windowMs: 60 * 1000,
   max: 120,
   message: 'Límite de solicitudes excedido. Intenta de nuevo en un minuto.'
 });
 
 const authLimiter = createRateLimiter({
+  keyPrefix: 'auth',
   windowMs: 15 * 60 * 1000,
   max: 100,
   message: 'Demasiadas solicitudes de autenticación. Espera unos minutos antes de reintentar.'
@@ -101,8 +116,9 @@ async function startServer() {
   validateSecurityConfig();
 
   await connectDB();
+  await initializeSecurityCollections();
 
-  // Cargar cache de IPs bloqueadas desde MongoDB al arrancar
+  // Cargar el bloqueo persistente antes de aceptar peticiones.
   await loadBlacklistCache();
 
   httpServer = app.listen(port, () => {
@@ -115,4 +131,7 @@ async function startServer() {
   httpServer.keepAliveTimeout = 5000;
 }
 
-startServer();
+startServer().catch((error) => {
+  console.error('No se pudo iniciar el backend:', error);
+  process.exit(1);
+});

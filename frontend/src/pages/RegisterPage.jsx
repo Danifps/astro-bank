@@ -273,13 +273,23 @@ export default function RegisterPage() {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
+        e.target.value = '';
+        setCedulaFileName('');
+        setFormData((prev) => ({ ...prev, archivoDocumento: null }));
         setErrorMessage('El archivo no debe exceder los 5 MB.');
+        return;
+      }
+      if (!['application/pdf', 'image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        e.target.value = '';
+        setCedulaFileName('');
+        setFormData((prev) => ({ ...prev, archivoDocumento: null }));
+        setErrorMessage('Solo se permiten archivos PDF, JPEG, PNG o WebP.');
         return;
       }
       setCedulaFileName(file.name);
       setFormData((prev) => ({
         ...prev,
-        archivoDocumento: file.name
+        archivoDocumento: file
       }));
       if (errorMessage) setErrorMessage('');
     }
@@ -576,7 +586,6 @@ export default function RegisterPage() {
         usuario: usuarioNormalizado,
         tipo_documento: formData.tipoDocumento,
         cedula: cedulaNormalizada,
-        archivo_documento: formData.archivoDocumento || `uploads/documentos/${formData.tipoDocumento.toLowerCase()}${cedulaNormalizada}_cedula.pdf`,
         nombres: nombresLimpios,
         apellidos: apellidosLimpios,
         nombre_completo: `${nombresLimpios} ${apellidosLimpios}`.trim(),
@@ -603,7 +612,7 @@ export default function RegisterPage() {
     setErrorMessage('');
 
     try {
-      const res = await authService.register(payload);
+      const res = await authService.register(payload, formData.archivoDocumento);
       if (res.ok) {
         setSuccessModal(true);
       } else {
@@ -727,7 +736,7 @@ export default function RegisterPage() {
                       type="file"
                       id="archivoDocumento"
                       name="archivoDocumento"
-                      accept="image/*,.pdf"
+                      accept="application/pdf,image/jpeg,image/png,image/webp"
                       onChange={handleFileUpload}
                       className="document-file-input"
                     />

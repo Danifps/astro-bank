@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { mkdir, unlink, writeFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Usuario } from '../models/Usuario.js';
 import { Perfil } from '../models/Perfil.js';
 import {
@@ -7,8 +11,12 @@ import {
   clearFailedLoginAttempts,
   createSessionToken,
   getClientIp,
-  logError
+  logError,
+  clearSessionCookie,
+  setSessionCookie
 } from '../middlewares/security.js';
+
+const DOCUMENTS_DIRECTORY = fileURLToPath(new URL('../../uploads/', import.meta.url));
 
 // ── Validaciones de entrada ───────────────────────────────────────────────────
 
@@ -28,8 +36,9 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
  */
 export const login = async (req, res) => {
   try {
+    clearSessionCookie(res);
     const { usuarioOCedula, claveAcceso } = req.body || {};
-    console.log(`📡 [AUTH ATTEMPT] Intento de login recibido: "${usuarioOCedula}"`);
+    console.log('📡 [AUTH ATTEMPT] Intento de login recibido.');
 
     // 1. Verificar si la base de datos MongoDB está conectada
     if (mongoose.connection.readyState !== 1) {
@@ -107,7 +116,7 @@ export const login = async (req, res) => {
         });
       }
 
-      console.warn(`❌ [AUTH DENIED] Usuario no encontrado: "${inputClean}"`);
+      console.warn('❌ [AUTH DENIED] Usuario no encontrado.');
       return res.status(401).json({
         ok: false,
         intentosRestantes: attemptInfo.attemptsLeft,
@@ -122,7 +131,7 @@ export const login = async (req, res) => {
       passwordMatches = await bcrypt.compare(claveAcceso, userFound.contrasena);
     } else {
       // Contraseña no hasheada en BD: rechazar y forzar al admin a migrar los datos
-      console.error(`[SEGURIDAD] ⚠️ Usuario "${userFound.usuario}" tiene contraseña en texto plano. Debe rehashear con bcrypt.`);
+      console.error('[SEGURIDAD] ⚠️ Existe una contraseña en texto plano. Debe rehashearse con bcrypt.');
       passwordMatches = false;
     }
 
@@ -147,7 +156,7 @@ export const login = async (req, res) => {
         });
       }
 
-      console.warn(`❌ [AUTH DENIED] Clave incorrecta para usuario: "${userFound.usuario}"`);
+      console.warn('❌ [AUTH DENIED] Credenciales incorrectas.');
       return res.status(401).json({
         ok: false,
         intentosRestantes: attemptInfo.attemptsLeft,
@@ -156,7 +165,7 @@ export const login = async (req, res) => {
     }
 
     // Login exitoso: reiniciar contador de intentos fallidos de esta IP
-    clearFailedLoginAttempts(req);
+    await clearFailedLoginAttempts(req);
 
     // 6. Preparar datos de sesión seguros con vigencia máxima de 5 minutos
     const nombreCompleto = perfilFound?.nombre_completo || userFound.usuario;
@@ -177,13 +186,13 @@ export const login = async (req, res) => {
       usuario: usuarioRespuesta.usuario,
       rol: usuarioRespuesta.rol
     }, getClientIp(req));
+    setSessionCookie(res, session.token);
 
-    console.log(`✅ [AUTH SUCCESS] Usuario autenticado con éxito: "${userFound.usuario}" (${nombreCompleto})`);
+    console.log('✅ [AUTH SUCCESS] Usuario autenticado con éxito.');
     return res.status(200).json({
       ok: true,
       mensaje: 'Autenticación exitosa en Astro Bank.',
       usuario: usuarioRespuesta,
-      token: session.token,
       expiresAt: session.expiresAt,
       sessionDurationMs: session.sessionDurationMs
     });
@@ -202,6 +211,7 @@ export const login = async (req, res) => {
  */
 export const register = async (req, res) => {
   let usuarioCreadoId = null;
+  let storedDocumentPath = null;
 
   try {
     if (mongoose.connection.readyState !== 1) {
@@ -219,7 +229,9 @@ export const register = async (req, res) => {
       typeof perfil?.cedula !== 'string' ||
       !usuario.usuario.trim() ||
       !usuario.contrasena ||
-      !perfil.cedula.trim()
+      !perfil.cedula.trim() ||
+      !req.file ||
+      !req.documentExtension
     ) {
       return res.status(400).json({
         ok: false,
@@ -316,6 +328,11 @@ export const register = async (req, res) => {
     await nuevoUsuario.save();
     usuarioCreadoId = nuevoUsuario._id;
 
+    const documentFileName = `${randomUUID()}.${req.documentExtension}`;
+    storedDocumentPath = path.join(DOCUMENTS_DIRECTORY, documentFileName);
+    await mkdir(DOCUMENTS_DIRECTORY, { recursive: true });
+    await writeFile(storedDocumentPath, req.file.buffer, { flag: 'wx', mode: 0o600 });
+
     // Lista blanca explícita de campos permitidos en Perfil (evita mass assignment)
     const nombresLimpios = typeof perfil.nombres === 'string' ? perfil.nombres.trim() : '';
     const apellidosLimpios = typeof perfil.apellidos === 'string' ? perfil.apellidos.trim() : '';
@@ -325,7 +342,7 @@ export const register = async (req, res) => {
       usuario: cleanUser,
       tipo_documento: perfil.tipo_documento,
       cedula: cleanCedula,
-      archivo_documento: perfil.archivo_documento,
+      archivo_documento: documentFileName,
       nombres: nombresLimpios,
       apellidos: apellidosLimpios,
       nombre_completo: `${nombresLimpios} ${apellidosLimpios}`.trim(),
@@ -361,7 +378,12 @@ export const register = async (req, res) => {
   } catch (error) {
     // Revertir creación de usuario si falló el guardado del perfil
     if (usuarioCreadoId) {
-      await Usuario.deleteOne({ _id: usuarioCreadoId }).catch(() => {});
+      await Usuario.deleteOne({ _id: usuarioCreadoId })
+        .catch((rollbackError) => logError('register user rollback', rollbackError));
+    }
+    if (storedDocumentPath) {
+      await unlink(storedDocumentPath)
+        .catch((cleanupError) => logError('register document cleanup', cleanupError));
     }
 
     if (error?.name === 'ValidationError') {

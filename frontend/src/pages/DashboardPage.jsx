@@ -387,11 +387,9 @@ export default function DashboardPage() {
         expireSession();
         return;
       }
-      if (currentUser.token) {
-        const res = await authService.verifySession(currentUser.token);
-        if (!res.ok) {
-          expireSession();
-        }
+      const res = await authService.verifySession();
+      if (!res.ok) {
+        expireSession();
       }
     };
 
@@ -529,7 +527,7 @@ export default function DashboardPage() {
   }, []);
 
   const handleLogout = () => {
-    authService.clearSession();
+    void authService.logout();
     navigate('/login');
   };
 

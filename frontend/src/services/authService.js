@@ -8,51 +8,57 @@ export const authService = {
       ? authMeta.expiresAt
       : Date.now() + MAX_SESSION_MS;
 
-    const sessionData = {
-      ...usuario,
-      token: authMeta.token || null,
-      expiresAt
-    };
+    const sessionData = { ...usuario, expiresAt };
 
-    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionData));
+    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionData));
     return sessionData;
   },
 
   getActiveSession() {
     try {
-      const raw = localStorage.getItem(SESSION_STORAGE_KEY);
+      const raw = sessionStorage.getItem(SESSION_STORAGE_KEY);
       if (!raw) return null;
 
       const session = JSON.parse(raw);
       if (!session || typeof session.expiresAt !== 'number' || Date.now() >= session.expiresAt) {
-        localStorage.removeItem(SESSION_STORAGE_KEY);
+        sessionStorage.removeItem(SESSION_STORAGE_KEY);
         return null;
       }
 
       return session;
     } catch {
-      localStorage.removeItem(SESSION_STORAGE_KEY);
+      sessionStorage.removeItem(SESSION_STORAGE_KEY);
       return null;
     }
   },
 
   clearSession() {
+    sessionStorage.removeItem(SESSION_STORAGE_KEY);
     localStorage.removeItem(SESSION_STORAGE_KEY);
   },
 
-  async verifySession(token) {
-    if (!token) {
-      return { ok: false, expired: true, mensaje: 'Sesión sin token válido.' };
+  async logout() {
+    this.clearSession();
+    try {
+      const response = await fetch(`${API_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error(`Logout rechazado (${response.status}).`);
+      }
+    } catch (error) {
+      console.error('Error al cerrar la sesión en el servidor:', error);
+      return false;
     }
+  },
 
+  async verifySession() {
     try {
       const response = await fetch(`${API_URL}/auth/session`, {
         method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        credentials: 'include'
       });
-
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
         return {
@@ -63,8 +69,9 @@ export const authService = {
       }
 
       return data;
-    } catch {
-      return { ok: true, offline: true };
+    } catch (error) {
+      console.error('No se pudo verificar la sesión con el servidor:', error);
+      return { ok: false, offline: true, expired: false };
     }
   },
 
@@ -77,6 +84,7 @@ export const authService = {
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -98,14 +106,16 @@ export const authService = {
    * Registro completo de cliente natural
    * @param {object} payload Objeto con { usuario, perfil }
    */
-  async register(payload) {
+  async register(payload, documentFile) {
     try {
+      const formData = new FormData();
+      formData.append('payload', JSON.stringify(payload));
+      formData.append('archivoDocumento', documentFile);
+
       const response = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
+        credentials: 'include',
+        body: formData
       });
 
       const data = await response.json();

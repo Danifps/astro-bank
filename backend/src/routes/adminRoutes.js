@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { BlacklistedAddress } from '../models/BlacklistedAddress.js';
-import { requireActiveSession } from '../middlewares/security.js';
+import {
+  removeBlacklistedAddress,
+  requireActiveSession,
+  requireTrustedOrigin
+} from '../middlewares/security.js';
 
 const router = Router();
 
@@ -33,10 +37,10 @@ router.get('/blacklist', requireActiveSession, requireAdmin, async (_req, res) =
  * DELETE /api/admin/blacklist/:ip
  * Desbloquea manualmente una IP (y elimina su registro de la BD + cache).
  */
-router.delete('/blacklist/:ip', requireActiveSession, requireAdmin, async (req, res) => {
+router.delete('/blacklist/:ip', requireTrustedOrigin, requireActiveSession, requireAdmin, async (req, res) => {
   const { ip } = req.params;
   try {
-    const result = await BlacklistedAddress.deleteOne({ ip });
+    const result = await removeBlacklistedAddress(ip);
     if (result.deletedCount === 0) {
       return res.status(404).json({ ok: false, mensaje: `La IP ${ip} no está en la lista de bloqueos.` });
     }
