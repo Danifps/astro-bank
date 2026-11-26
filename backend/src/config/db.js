@@ -3,13 +3,14 @@ import mongoose from 'mongoose';
 export const connectDB = async () => {
   try {
     const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/AstroBank';
-    
+
     // Ocultar credenciales si existen en la URL para el log de consola
     const maskedUri = mongoUri.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@');
     console.log(`📡 Intentando conectar a MongoDB: ${maskedUri}`);
 
     const conn = await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 5000
+      dbName: 'AstroBank',
+      serverSelectionTimeoutMS: 8000
     });
 
     console.log(`✅ MongoDB Conectado exitosamente: Host: ${conn.connection.host} | BD: ${conn.connection.name}`);

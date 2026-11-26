@@ -8,9 +8,11 @@ import {
   AlertCircle,
   ShieldCheck,
   Calendar,
-  MapPin
+  MapPin,
+  Loader2
 } from 'lucide-react';
 import AuthLayout from '../components/AuthLayout';
+import { authService } from '../services/authService';
 import '../styles/Register.css';
 
 // Configuración de los 7 pasos independientes y progresivos
@@ -220,6 +222,7 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -536,21 +539,69 @@ export default function RegisterPage() {
     return true;
   };
 
-  const handleNext = (e) => {
+  const handleNext = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!validateCurrentStep()) return;
 
     if (step < TOTAL_STEPS) {
       setStep((prev) => prev + 1);
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     } else {
-      const finalPayload = {
-        ...formData,
-        fechaNacimientoFormatoDDMMYY: formatToDDMMYY(formData.fechaNacimiento),
-        nombreCompleto: `${formData.nombres} ${formData.apellidos}`.trim()
-      };
-      console.log('Objeto JSON completo para el backend de Astro Bank:', JSON.stringify(finalPayload, null, 2));
-      setSuccessModal(true);
+      setIsSubmitting(true);
+      setErrorMessage('');
+
+      try {
+        const cleanCedula = formData.numeroDocumento.trim().replace(/\D/g, '');
+        const cleanUser = formData.usuario.trim().toLowerCase();
+
+        const payload = {
+          usuario: {
+            usuario: cleanUser,
+            contrasena: formData.contrasena,
+            rol: 'cliente'
+          },
+          perfil: {
+            tipo_documento: formData.tipoDocumento || 'V',
+            cedula: cleanCedula,
+            archivo_documento: formData.archivoDocumento || `uploads/documentos/${(formData.tipoDocumento || 'V').toLowerCase()}${cleanCedula}_cedula.pdf`,
+            nombres: formData.nombres.trim(),
+            apellidos: formData.apellidos.trim(),
+            nombre_completo: `${formData.nombres.trim()} ${formData.apellidos.trim()}`,
+            fecha_nacimiento: formData.fechaNacimiento,
+            genero: formData.genero,
+            direccion: {
+              estado: formData.estado,
+              ciudad: formData.ciudad,
+              municipio: formData.municipio,
+              parroquia: formData.parroquia,
+              direccion_detallada: formData.direccionDetallada,
+              punto_referencia: formData.puntoReferencia
+            },
+            ocupacion: formData.ocupacion,
+            rango_ingresos: formData.rangoIngresos,
+            operadora: formData.operadora,
+            numero_telefono: formData.numeroTelefono.trim(),
+            correo_electronico: formData.correoElectronico.trim().toLowerCase(),
+            tipo_usuario: 'cliente'
+          }
+        };
+
+        const res = await authService.register(payload);
+
+        if (res.ok) {
+          setSuccessModal(true);
+        } else {
+          setErrorMessage(res.mensaje || 'Error al procesar el registro en Astro Bank.');
+          window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+        }
+      } catch (err) {
+        console.error('Error al registrar usuario:', err);
+        setErrorMessage('No se pudo conectar con el servidor de Astro Bank. Verifica que el backend esté en ejecución.');
+        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -1139,14 +1190,23 @@ export default function RegisterPage() {
               type="button"
               className="bank-btn bank-btn-secondary"
               onClick={handleBack}
+              disabled={isSubmitting}
             >
               Regresar
             </button>
             <button
               type="submit"
               className="bank-btn bank-btn-primary"
+              disabled={isSubmitting}
             >
-              {step === TOTAL_STEPS ? 'Crear mi Cuenta' : 'Siguiente'}
+              {isSubmitting ? (
+                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                  <span>Registrando en Astro Bank...</span>
+                </span>
+              ) : (
+                step === TOTAL_STEPS ? 'Crear mi Cuenta' : 'Siguiente'
+              )}
             </button>
           </div>
         </form>
@@ -1179,7 +1239,7 @@ export default function RegisterPage() {
               </div>
               <h2 className="success-modal-title">¡Registro Completado con Éxito!</h2>
               <p className="success-modal-desc">
-                Tus datos han sido registrados en <strong>Astro Bank</strong>. Ya puedes iniciar sesión con tu documento o usuario y tu clave de acceso.
+                Tu cuenta para el usuario <strong>@{formData.usuario.trim().toLowerCase()}</strong> ha sido creada y guardada exitosamente en la base de datos de <strong>Astro Bank</strong>. Ya puedes iniciar sesión con tu cédula o usuario y tu clave de acceso.
               </p>
               <button
                 type="button"

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import AuthLayout from '../components/AuthLayout';
@@ -15,6 +15,11 @@ export default function InvestorLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Al abrir la página de Login, asegurar que no quede ninguna sesión previa guardada
+  useEffect(() => {
+    localStorage.removeItem('astro_user');
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,18 +41,23 @@ export default function InvestorLoginPage() {
     setError('');
 
     try {
+      console.log('📡 [FRONTEND] Enviando credenciales inversionista...', { idOrEmail: formData.investorIdOrEmail });
       const res = await authService.login(formData.investorIdOrEmail, formData.claveAcceso);
+      console.log('📡 [FRONTEND] Respuesta del backend:', res);
 
-      if (res.ok && res.usuario) {
+      if (res && res.ok === true && res.usuario) {
         localStorage.setItem('astro_user', JSON.stringify({
           ...res.usuario,
           perfil: 'Inversionista'
         }));
         navigate('/dashboard');
       } else {
-        setError(res.mensaje || 'Credenciales de inversionista inválidas.');
+        localStorage.removeItem('astro_user');
+        setError(res?.mensaje || 'Credenciales de inversionista inválidas.');
       }
-    } catch {
+    } catch (err) {
+      console.error('❌ [FRONTEND] Error al conectar:', err);
+      localStorage.removeItem('astro_user');
       setError('Error al procesar la solicitud.');
     } finally {
       setLoading(false);
