@@ -1,0 +1,440 @@
+/* ========================================================
+   ESTILOS DE LA TARJETA DE CRÉDITO ASTRO BANK Y TILTED CARD
+   ======================================================== */
+
+/* Contenedor exterior con perspectiva 3D */
+.tilted-card-outer-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  user-select: none;
+}
+
+/* Levitación ambiental fluida y suave */
+.tilted-card-levitation {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  will-change: transform;
+}
+
+/* Contenedor interior interactivo con físicas de resorte (100% a color) */
+.tilted-card-inner {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  aspect-ratio: 1.586;
+  border-radius: 22px;
+  background: #060B1E;
+  overflow: hidden;
+  box-sizing: border-box;
+  will-change: transform, box-shadow;
+  transition: border-color 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+/* Contenido que llena estrictamente el 100% del contenedor */
+.tilted-card-content {
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+  overflow: hidden;
+  display: flex;
+  box-sizing: border-box;
+}
+
+/* Capa de reflejo especular (Glare) translúcida */
+.tilted-card-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  mix-blend-mode: overlay;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Capa de refracción holográfica iridiscente */
+.tilted-card-holo {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  mix-blend-mode: color-dodge;
+  z-index: 11;
+  pointer-events: none;
+}
+
+/* Onda expansiva en el punto exacto de impacto / golpe al presionar */
+.tilted-card-impact-ripple {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%) translateZ(60px);
+  border: 2px solid rgba(0, 210, 255, 0.9);
+  background: radial-gradient(circle, rgba(0, 210, 255, 0.35) 0%, transparent 70%);
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.75), inset 0 0 10px rgba(0, 102, 255, 0.6);
+  animation: cardImpactShockwave 0.6s cubic-bezier(0.12, 0.8, 0.3, 1) forwards;
+  z-index: 25;
+}
+
+@keyframes cardImpactShockwave {
+  0% {
+    width: 12px;
+    height: 12px;
+    opacity: 1;
+    transform: translate(-50%, -50%) translateZ(60px) scale(0.6);
+  }
+  100% {
+    width: 240px;
+    height: 240px;
+    opacity: 0;
+    transform: translate(-50%, -50%) translateZ(60px) scale(1.6);
+  }
+}
+
+/* ========================================================
+   CUERPO PRINCIPAL DE LA TARJETA (AstroCreditCard a todo color)
+   ======================================================== */
+.astro-card-body {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  border-radius: 22px;
+  padding: 28px 32px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  background: #060B1E;
+  color: #FFFFFF;
+  cursor: pointer;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4),
+              inset 0 -1px 2px rgba(0, 0, 0, 0.7);
+  transform-style: preserve-3d;
+}
+
+/* Fondos y texturas holográficas completas a todo color */
+.astro-card-bg-gradient {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 85% 15%, rgba(0, 210, 255, 0.42) 0%, transparent 52%),
+    radial-gradient(circle at 15% 85%, rgba(0, 0, 255, 0.52) 0%, transparent 58%),
+    radial-gradient(circle at 50% 50%, rgba(0, 102, 255, 0.25) 0%, transparent 70%),
+    linear-gradient(135deg, #050C28 0%, #0B1D56 45%, #04081C 100%);
+  z-index: 1;
+  transform: translateZ(1px);
+}
+
+/* Malla geométrica de constelaciones finas */
+.astro-card-mesh-pattern {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.16;
+  background-image: 
+    radial-gradient(circle at 50% 50%, #00D2FF 1px, transparent 1px),
+    linear-gradient(to right, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 26px 26px;
+  z-index: 2;
+  transform: translateZ(2px);
+}
+
+.astro-card-starlight-glow {
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(0, 210, 255, 0.36) 0%, transparent 70%);
+  filter: blur(25px);
+  z-index: 2;
+  pointer-events: none;
+  transform: translateZ(3px);
+}
+
+/* Borde perimetral brillante */
+.astro-card-edge-highlight {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+  z-index: 8;
+  transform: translateZ(10px);
+}
+
+/* ========================================================
+   FILA 1: CABECERA (Logo Astro Bank y Símbolo Contactless)
+   ======================================================== */
+.astro-card-layer-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 5;
+  transform: translateZ(42px);
+  transform-style: preserve-3d;
+}
+
+.astro-card-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.astro-card-logo-sparkle {
+  color: #00D2FF;
+  filter: drop-shadow(0 0 12px rgba(0, 210, 255, 0.9));
+  display: flex;
+  align-items: center;
+  transition: transform 0.3s ease;
+}
+
+.astro-card-body:hover .astro-card-logo-sparkle {
+  transform: scale(1.08) rotate(4deg);
+}
+
+.astro-card-brand-name {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  color: #FFFFFF;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.65);
+}
+
+.astro-card-contactless {
+  color: rgba(255, 255, 255, 0.88);
+  display: flex;
+  align-items: center;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+}
+
+/* ========================================================
+   FILA 2: CHIP EMV METÁLICO (Efecto 3D Realzado)
+   ======================================================== */
+.astro-card-layer-chip-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-top: 6px;
+  z-index: 5;
+  transform: translateZ(48px);
+  transform-style: preserve-3d;
+}
+
+/* Chip EMV realista con relieve */
+.astro-card-emv-chip {
+  position: relative;
+  width: 50px;
+  height: 38px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #FFE28A 0%, #D89F31 45%, #F7D576 75%, #B47C1C 100%);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.7),
+              0 4px 12px rgba(0, 0, 0, 0.55),
+              0 1px 2px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(135, 90, 15, 0.65);
+  overflow: hidden;
+  transition: filter 0.25s ease;
+}
+
+.astro-card-body:hover .astro-card-emv-chip {
+  filter: brightness(1.06);
+}
+
+.emv-chip-line {
+  position: absolute;
+  background: rgba(90, 55, 10, 0.6);
+}
+
+.emv-chip-line-horizontal {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  transform: translateY(-50%);
+}
+
+.emv-chip-line-vertical {
+  left: 36%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+}
+
+.emv-chip-center-core {
+  position: absolute;
+  top: 50%;
+  left: 36%;
+  width: 18px;
+  height: 15px;
+  border-radius: 3px;
+  border: 1px solid rgba(90, 55, 10, 0.6);
+  transform: translate(-50%, -50%);
+}
+
+/* ========================================================
+   FILA 3: NÚMERO DE TARJETA EN RELIEVE (3D Pop)
+   ======================================================== */
+.astro-card-layer-number {
+  position: relative;
+  margin: 8px 0 4px;
+  z-index: 5;
+  transform: translateZ(52px);
+  transform-style: preserve-3d;
+}
+
+.astro-card-digits {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: clamp(15px, 2vw, 21px);
+  font-weight: 700;
+  letter-spacing: 2.8px;
+  white-space: nowrap;
+  color: #FFFFFF;
+  text-shadow: 
+    0 1px 0 rgba(255, 255, 255, 0.7),
+    0 3px 6px rgba(0, 0, 0, 0.85),
+    0 0 16px rgba(0, 210, 255, 0.45);
+  display: inline-block;
+  user-select: text;
+  animation: cardDigitsPulse 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cardDigitsPulse {
+  0% {
+    transform: scale(1.06);
+    text-shadow: 0 0 20px rgba(0, 210, 255, 0.95), 0 0 35px rgba(0, 102, 255, 0.85);
+  }
+  100% {
+    transform: scale(1);
+    text-shadow: 
+      0 1px 0 rgba(255, 255, 255, 0.7),
+      0 3px 6px rgba(0, 0, 0, 0.85),
+      0 0 16px rgba(0, 210, 255, 0.45);
+  }
+}
+
+/* ========================================================
+   FILA 4: PIE (DANIEL MORALES, Expiración, Network Hologram)
+   ======================================================== */
+.astro-card-layer-footer {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  z-index: 5;
+  transform: translateZ(38px);
+  transform-style: preserve-3d;
+}
+
+.astro-card-meta-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.astro-card-meta-label {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  color: #94A3B8;
+  text-transform: uppercase;
+}
+
+.astro-card-meta-value {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: #F8FAFC;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
+  text-transform: uppercase;
+}
+
+.astro-card-holder-name {
+  color: #FFFFFF;
+  letter-spacing: 1.4px;
+}
+
+.astro-card-expiry-date {
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 2px;
+}
+
+/* Emblema de red holográfico con esferas translúcidas */
+.astro-card-network-badge {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 50px;
+  height: 32px;
+  filter: drop-shadow(0 4px 10px rgba(0, 102, 255, 0.5));
+}
+
+.network-circle {
+  width: 29px;
+  height: 29px;
+  border-radius: 50%;
+  position: absolute;
+  top: 1px;
+}
+
+.network-circle-left {
+  left: 0;
+  background: linear-gradient(135deg, #0055FF 0%, #00D2FF 100%);
+  opacity: 0.92;
+  box-shadow: 0 0 14px rgba(0, 102, 255, 0.65);
+}
+
+.network-circle-right {
+  right: 0;
+  background: linear-gradient(135deg, rgba(0, 210, 255, 0.85) 0%, rgba(255, 255, 255, 0.55) 100%);
+  mix-blend-mode: hard-light;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* ========================================================
+   RESPONSIVE DESIGN (Tablets y Móviles)
+   ======================================================== */
+@media (max-width: 520px) {
+  .astro-card-body {
+    padding: 22px 22px;
+    border-radius: 18px;
+  }
+
+  .astro-card-brand-name {
+    font-size: 17px;
+  }
+
+  .astro-card-logo-sparkle svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .astro-card-emv-chip {
+    width: 42px;
+    height: 32px;
+  }
+
+  .astro-card-digits {
+    font-size: 14px;
+    letter-spacing: 1.8px;
+    white-space: nowrap;
+  }
+
+  .astro-card-meta-value {
+    font-size: 12px;
+  }
+}

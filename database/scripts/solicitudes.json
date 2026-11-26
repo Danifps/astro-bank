@@ -1,0 +1,10 @@
+{
+  "codigo_solicitud": "SOL-2026-0001",
+  "cedula": "19876543",
+  "moneda": "USD",
+  "monto_solicitado": 2500.00,
+  "plazo_meses": 12,
+  "destino": "Compra de inventario",
+  "estatus": "pendiente",
+  "fecha_solicitud": { "$date": "2026-11-18T21:05:00Z" }
+}

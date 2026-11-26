@@ -1,0 +1,11 @@
+{
+  "codigo_tipo_inversion": "TIP-INV-01",
+  "nombre_inversion": "Fondo Conservador USD",
+  "moneda": "USD",
+  "rendimiento_esperado_porcentaje": 8.5,
+  "plazo_minimo_dias": 90,
+  "monto_minimo": 500.00,
+  "nivel_riesgo": "Bajo",
+  "descripcion": "Inversión de bajo riesgo orientada a estabilidad en dólares.",
+  "estatus": "activo"
+}

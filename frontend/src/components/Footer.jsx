@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import logotipoImg from '../assets/logotipo.png';
 import '../styles/Footer.css';
 
@@ -20,10 +21,10 @@ export default function Footer() {
         <div className="footer-col">
           <h4 className="footer-col-title">Sobre nosotros</h4>
           <ul className="footer-links-list">
-            <li><a href="#quienes-somos">Quiénes somos</a></li>
-            <li><a href="#soluciones">Soluciones de crédito</a></li>
-            <li><a href="#inversionistas">Para inversionistas</a></li>
-            <li><a href="#preguntas">Preguntas frecuentes</a></li>
+            <li><Link to="/quienes-somos">Quiénes somos</Link></li>
+            <li><Link to="/soluciones-de-credito">Soluciones de crédito</Link></li>
+            <li><Link to="/para-inversionistas">Para inversionistas</Link></li>
+            <li><Link to="/preguntas-frecuentes">Preguntas frecuentes</Link></li>
           </ul>
         </div>
 

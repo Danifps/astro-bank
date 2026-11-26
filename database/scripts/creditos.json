@@ -1,0 +1,23 @@
+{
+  "codigo_credito": "CRE-2026-0001",
+  "codigo_solicitud": "SOL-2026-0001",
+  "cedula": "19876543",
+  "monto_aprobado": 2500.00,
+  "saldo_pendiente": 2250.00,
+  "moneda": "USD",
+  "estatus": "activo",
+  "tabla_amortizacion": [
+    {
+      "cuota": 1,
+      "monto": 250.00,
+      "fecha_vencimiento": "2026-12-18",
+      "estado_pago": "pagado"
+    },
+    {
+      "cuota": 2,
+      "monto": 250.00,
+      "fecha_vencimiento": "2027-01-18",
+      "estado_pago": "pendiente"
+    }
+  ]
+}

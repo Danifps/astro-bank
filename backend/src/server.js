@@ -1,136 +1,119 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const connectBd = require('./config/bd');
-const Usuario = require('./models/schema_Usuarios');
-const Perfil = require('./models/schema_Perfil');
+import 'dotenv/config';
+import express from 'express';
+import mongoose from 'mongoose';
+import { connectDB } from './config/db.js';
+import authRoutes from './routes/authRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import {
+  securityHeaders,
+  createCorsMiddleware,
+  sanitizeInput,
+  createRateLimiter,
+  bodyParserErrorHandler,
+  notFoundHandler,
+  globalErrorHandler,
+  backdoorBlocker,
+  sessionIntegrityGuard,
+  loadBlacklistCache,
+  validateSecurityConfig
+} from './middlewares/security.js';
 
-dotenv.config();
+
 
 const app = express();
-const port = process.env.PORT || 4000;      
+const port = Number(process.env.PORT) || 4000;
 
-app.use(cors());
-app.use(express.json());
+// Endurecimiento básico de Express
+app.disable('x-powered-by');
+app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? 1 : false);
 
-// Captura JSON malformado en el cuerpo de la petición
-app.use((err, _req, res, next) => {
-  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    return res.status(400).json({
-      estado: 'error',
-      mensaje: 'El cuerpo de la petición no es un JSON válido'
-    });
-  }
-  return next(err);
+// Capas globales de seguridad
+app.use(securityHeaders);
+app.use(createCorsMiddleware());
+app.use(express.json({ limit: '100kb', strict: true }));
+app.use(express.urlencoded({ extended: false, limit: '100kb' }));
+app.use(bodyParserErrorHandler);
+app.use(sanitizeInput);
+
+// ── Anti-backdoor: bloquea IPs/MACs de rutas no autorizadas ──────────────────
+// Se aplica ANTES de cualquier ruta de negocio.
+app.use(sessionIntegrityGuard);  // Detecta headers de exploit/proxy sospechosos
+app.use(backdoorBlocker);        // Bloquea rutas fuera de la lista blanca
+
+// Control de tráfico para estabilidad y protección contra fuerza bruta
+const apiLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 120,
+  message: 'Límite de solicitudes excedido. Intenta de nuevo en un minuto.'
 });
 
-function handleRouteError(res, error, baseMessage) {
-  if (error?.name === 'ValidationError' || error?.name === 'CastError') {
-    return res.status(400).json({
-      estado: 'error',
-      mensaje: `${baseMessage}: ${error.message}`
-    });
-  }
+const authLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Demasiadas solicitudes de autenticación. Espera unos minutos antes de reintentar.'
+});
 
-  if (error?.code === 11000) {
-    return res.status(409).json({
-      estado: 'error',
-      mensaje: `${baseMessage}: registro duplicado`
-    });
-  }
+app.use('/api', apiLimiter);
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/v1/auth', authLimiter, authRoutes);
+app.use('/api/admin', adminRoutes);
 
-  return res.status(500).json({
-    estado: 'error',
-    mensaje: `${baseMessage}: ${error?.message || 'error interno del servidor'}`
-  });
-}
-
-function hasValidBody(req, res) {
-  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
-    res.status(400).json({
-      estado: 'error',
-      mensaje: 'Debe enviar un objeto JSON válido en el cuerpo de la petición'
-    });
-    return false;
-  }
-  return true;
-}
-
+// Verificación de salud del servicio y la base de datos
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok' });
+  const dbReady = mongoose.connection.readyState === 1;
+  res.status(dbReady ? 200 : 503).json({
+    ok: dbReady,
+    status: dbReady ? 'ok' : 'degraded',
+    database: dbReady ? 'connected' : 'disconnected',
+    uptime: Math.round(process.uptime()),
+    timestamp: new Date().toISOString()
+  });
 });
 
-app.post('/usuarios', async (req, res) => {
-  if (!hasValidBody(req, res)) return;
+app.use(notFoundHandler);
+app.use(globalErrorHandler);
 
+let httpServer = null;
+
+async function shutdown(signal) {
+  console.log(`\nSeñal ${signal} recibida. Cerrando servidor de forma segura...`);
   try {
-    const { username, password, rol } = req.body;
-    const nuevoUsuario = new Usuario({ username, password, rol });
-    await nuevoUsuario.save();
-
-    res.status(201).json({
-      estado: 'activo',
-      mensaje: 'Usuario creado correctamente',
-      data: {
-        _id: nuevoUsuario._id,
-        username: nuevoUsuario.username,
-        rol: nuevoUsuario.rol
-      }
-    });
+    if (httpServer) {
+      await new Promise((resolve) => httpServer.close(resolve));
+    }
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.connection.close();
+    }
+    process.exit(0);
   } catch (error) {
-    handleRouteError(res, error, 'Lo sentimos, no se pudo crear el usuario');
+    console.error('Error durante el cierre del servidor:', error);
+    process.exit(1);
   }
-});
+}
 
-app.post('/perfil', async (req, res) => {
-  if (!hasValidBody(req, res)) return;
-
-  try {
-    const {
-      tipo_documento,
-      cedula,
-      nombre_completo,
-      genero,
-      direccion,
-      operadora_telefono,
-      numero_telefono,
-      correo_electronico,
-      imagen_documento,
-      tipo_usuario,
-      datos_laborales
-    } = req.body;
-
-    const nuevoPerfil = new Perfil({
-      tipo_documento,
-      cedula,
-      nombre_completo,
-      genero,
-      direccion,
-      operadora_telefono,
-      numero_telefono,
-      correo_electronico,
-      imagen_documento,
-      tipo_usuario,
-      datos_laborales
-    });
-
-    await nuevoPerfil.save();
-
-    res.status(201).json({
-      estado: 'activo',
-      mensaje: 'Perfil creado correctamente',
-      data: nuevoPerfil
-    });
-  } catch (error) {
-    handleRouteError(res, error, 'Lo sentimos, no se pudo crear el perfil');
-  }
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('unhandledRejection', (reason) => {
+  console.error('Promesa rechazada no manejada:', reason);
 });
 
 async function startServer() {
-  await connectBd();
-  app.listen(port, () => {
+  // Verificar configuración de seguridad obligatoria antes de arrancar
+  validateSecurityConfig();
+
+  await connectDB();
+
+  // Cargar cache de IPs bloqueadas desde MongoDB al arrancar
+  await loadBlacklistCache();
+
+  httpServer = app.listen(port, () => {
     console.log(`Backend escuchando en http://localhost:${port}`);
   });
+
+  // Protección contra conexiones lentas (Slowloris)
+  httpServer.requestTimeout = 15000;
+  httpServer.headersTimeout = 20000;
+  httpServer.keepAliveTimeout = 5000;
 }
 
 startServer();

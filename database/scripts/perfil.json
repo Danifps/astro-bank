@@ -1,0 +1,102 @@
+[
+  {
+    "usuario": "dmorales",
+    "tipo_documento": "V",
+    "cedula": "24890123",
+    "archivo_documento": "uploads/documentos/v24890123_cedula.pdf",
+    "nombres": "Enyerbert Daniel",
+    "apellidos": "Morales Ramirez",
+    "nombre_completo": "Enyerbert Daniel Morales Ramirez",
+    "fecha_nacimiento": "1995-08-20",
+    "genero": "Hombre",
+    "direccion": {
+      "estado": "Carabobo",
+      "ciudad": "Valencia",
+      "municipio": "Naguanagua",
+      "parroquia": "Naguanagua",
+      "direccion_detallada": "Av. Universidad, Residencias La Granja, Torre B, Apto 8-2",
+      "punto_referencia": "Cerca del C.C. La Granja"
+    },
+    "ocupacion": "Independiente",
+    "rango_ingresos": "$800 - $1,500",
+    "operadora": "0412",
+    "numero_telefono": "3807072",
+    "correo_electronico": "daniel.morales@astrobank.com",
+    "tipo_usuario": "cliente"
+  },
+  {
+    "usuario": "cmendoza90",
+    "tipo_documento": "V",
+    "cedula": "19876543",
+    "archivo_documento": "uploads/documentos/v19876543_cedula.jpg",
+    "nombres": "Carlos Alberto",
+    "apellidos": "Mendoza Rivas",
+    "nombre_completo": "Carlos Alberto Mendoza Rivas",
+    "fecha_nacimiento": "1990-05-15",
+    "genero": "Hombre",
+    "direccion": {
+      "estado": "Aragua",
+      "ciudad": "Maracay",
+      "municipio": "Girardot",
+      "parroquia": "Joaquín Crespo",
+      "direccion_detallada": "Av. Bolívar este, Calle 5, Casa Nro 12",
+      "punto_referencia": "Frente a la plaza central"
+    },
+    "ocupacion": "Empleado",
+    "rango_ingresos": "$400 - $800",
+    "operadora": "0414",
+    "numero_telefono": "5550142",
+    "correo_electronico": "carlos.mendoza@ejemplo.com",
+    "tipo_usuario": "cliente"
+  },
+  {
+    "usuario": "mrodriguez",
+    "tipo_documento": "V",
+    "cedula": "22145678",
+    "archivo_documento": "uploads/documentos/v22145678_cedula.jpg",
+    "nombres": "Mariana Sofia",
+    "apellidos": "Rodriguez Gomez",
+    "nombre_completo": "Mariana Sofia Rodriguez Gomez",
+    "fecha_nacimiento": "1993-11-04",
+    "genero": "Mujer",
+    "direccion": {
+      "estado": "Distrito Capital",
+      "ciudad": "Caracas",
+      "municipio": "Chacao",
+      "parroquia": "Chacao",
+      "direccion_detallada": "Av. Francisco de Miranda, Edificio Centro Plaza, Piso 7, Ofic. 7-A",
+      "punto_referencia": "Al lado de la estación Miranda"
+    },
+    "ocupacion": "Comerciante",
+    "rango_ingresos": "Más de $1,500",
+    "operadora": "0424",
+    "numero_telefono": "8901234",
+    "correo_electronico": "mariana.rodriguez@comercio.ve",
+    "tipo_usuario": "cliente"
+  },
+  {
+    "usuario": "vcastillo",
+    "tipo_documento": "V",
+    "cedula": "27345678",
+    "archivo_documento": "uploads/documentos/v27345678_cedula.pdf",
+    "nombres": "Valeria Alejandra",
+    "apellidos": "Castillo Colina",
+    "nombre_completo": "Valeria Alejandra Castillo Colina",
+    "fecha_nacimiento": "2001-03-22",
+    "genero": "Mujer",
+    "direccion": {
+      "estado": "Zulia",
+      "ciudad": "Maracaibo",
+      "municipio": "Maracaibo",
+      "parroquia": "Olegario Villalobos",
+      "direccion_detallada": "Av. 4 Bella Vista con Calle 67, Res. Cecilio Acosta, Apto 2-C",
+      "punto_referencia": "Cerca de la Iglesia La Consolación"
+    },
+    "ocupacion": "Estudiante",
+    "rango_ingresos": "$150 - $400",
+    "operadora": "0416",
+    "numero_telefono": "7412589",
+    "correo_electronico": "valeria.castillo@estudiante.edu.ve",
+    "tipo_usuario": "cliente"
+  }
+]
