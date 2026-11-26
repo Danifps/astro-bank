@@ -8,6 +8,7 @@ const SESSION_TTL_MS = 5 * 60 * 1000; // 5 minutos máximos de sesión activa
 const SESSION_COOKIE_NAME = 'astro_session';
 const LOGIN_FAILURE_LIMIT = 5;
 const LOGIN_FAILURE_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_LOCK_DURATION_MS = 60 * 1000;
 const ATTACK_STRIKE_LIMIT = 3;
 const ATTACK_STRIKE_WINDOW_MS = 24 * 60 * 60 * 1000;
 const RATE_LIMIT_COLLECTION = 'security_rate_limits';
@@ -224,19 +225,39 @@ async function incrementSecurityCounter(key, windowMs) {
   }
 }
 
+async function setLoginBlockExpiration(key) {
+  const blockedUntil = new Date(Date.now() + LOGIN_LOCK_DURATION_MS);
+  await mongoose.connection.collection(RATE_LIMIT_COLLECTION).updateOne(
+    { key },
+    { $set: { blockedUntil, expiresAt: blockedUntil } }
+  );
+  return blockedUntil;
+}
+
 /**
  * Middleware que bloquea cualquier IP con bloqueo temporal activo.
  */
 export async function checkLoginIpBlock(req, res, next) {
   const ip = getClientIp(req);
+  const key = `login-failures:${ip}`;
   try {
-    const entry = await mongoose.connection.collection(RATE_LIMIT_COLLECTION).findOne({
-      key: `login-failures:${ip}`
-    });
+    const collection = mongoose.connection.collection(RATE_LIMIT_COLLECTION);
+    const entry = await collection.findOne({ key });
     const now = Date.now();
+    let blockedUntil = entry?.blockedUntil;
 
-    if (entry?.count >= LOGIN_FAILURE_LIMIT && entry.expiresAt.getTime() > now) {
-      const secondsRemaining = Math.max(1, Math.ceil((entry.expiresAt.getTime() - now) / 1000));
+    if (
+      entry?.count >= LOGIN_FAILURE_LIMIT &&
+      !blockedUntil &&
+      entry.expiresAt?.getTime() > now
+    ) {
+      blockedUntil = await setLoginBlockExpiration(key);
+      const updatedEntry = await collection.findOne({ key });
+      blockedUntil = updatedEntry?.blockedUntil || blockedUntil;
+    }
+
+    if (entry?.count >= LOGIN_FAILURE_LIMIT && blockedUntil && new Date(blockedUntil).getTime() > now) {
+      const secondsRemaining = Math.max(1, Math.ceil((new Date(blockedUntil).getTime() - now) / 1000));
       res.setHeader('Retry-After', String(secondsRemaining));
       return res.status(429).json({
         ok: false,
@@ -258,14 +279,20 @@ export async function checkLoginIpBlock(req, res, next) {
 
 export async function registerFailedLoginAttempt(req) {
   const ip = getClientIp(req);
-  const entry = await incrementSecurityCounter(`login-failures:${ip}`, LOGIN_FAILURE_WINDOW_MS);
+  const key = `login-failures:${ip}`;
+  const entry = await incrementSecurityCounter(key, LOGIN_FAILURE_WINDOW_MS);
   const attempts = entry.count;
-  const retryAfterSeconds = Math.max(1, Math.ceil((entry.expiresAt.getTime() - Date.now()) / 1000));
+  const blockedUntil = attempts >= LOGIN_FAILURE_LIMIT
+    ? await setLoginBlockExpiration(key)
+    : null;
+  const retryAfterSeconds = blockedUntil
+    ? Math.max(1, Math.ceil((blockedUntil.getTime() - Date.now()) / 1000))
+    : 0;
   return {
     blocked: attempts >= LOGIN_FAILURE_LIMIT,
     permanent: false,
     attemptsLeft: Math.max(0, LOGIN_FAILURE_LIMIT - attempts),
-    retryAfterSeconds: attempts >= LOGIN_FAILURE_LIMIT ? retryAfterSeconds : 0
+    retryAfterSeconds
   };
 }
 

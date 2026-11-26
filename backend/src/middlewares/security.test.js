@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
+import mongoose from 'mongoose';
 import test from 'node:test';
 import {
+  checkLoginIpBlock,
   requireTrustedOrigin,
   setSessionCookie
 } from './security.js';
@@ -75,4 +77,50 @@ test('sets the authentication cookie HttpOnly, SameSite strict and Secure in pro
   assert.equal(cookieOptions.secure, true);
   assert.equal(cookieOptions.sameSite, 'strict');
   assert.equal(cookieOptions.path, '/api');
+});
+
+test('reduces an existing login lock to a one-minute cooldown', async () => {
+  const previousCollection = mongoose.connection.collection;
+  const key = 'login-failures:203.0.113.42';
+  const record = {
+    key,
+    count: 5,
+    expiresAt: new Date(Date.now() + 850 * 1000)
+  };
+  const collection = {
+    async findOne() {
+      return { ...record };
+    },
+    async updateOne(_filter, update) {
+      Object.assign(record, update.$set);
+    }
+  };
+  let responseStatus = null;
+  let retryAfter = null;
+
+  mongoose.connection.collection = () => collection;
+  try {
+    await checkLoginIpBlock(
+      { ip: '203.0.113.42' },
+      {
+        setHeader(name, value) {
+          if (name === 'Retry-After') retryAfter = Number(value);
+        },
+        status(status) {
+          responseStatus = status;
+          return this;
+        },
+        json() {
+          return this;
+        }
+      },
+      () => assert.fail('Expected the login request to remain blocked')
+    );
+  } finally {
+    mongoose.connection.collection = previousCollection;
+  }
+
+  assert.equal(responseStatus, 429);
+  assert.ok(retryAfter > 0 && retryAfter <= 60);
+  assert.equal(record.blockedUntil.getTime(), record.expiresAt.getTime());
 });
