@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(() =>
     searchParams.get('expired') === '1'
-      ? 'Tu sesión expiró al cumplirse el límite máximo de 5 minutos. Inicia sesión nuevamente.'
+      ? 'Tu sesión expiró al cumplirse el límite máximo de 10 minutos. Inicia sesión nuevamente.'
       : ''
   );
   const [loading, setLoading] = useState(false);

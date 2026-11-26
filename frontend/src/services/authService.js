@@ -1,6 +1,6 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 const SESSION_STORAGE_KEY = 'astro_user';
-export const MAX_SESSION_MS = 5 * 60 * 1000;
+export const MAX_SESSION_MS = 10 * 60 * 1000;
 
 export const authService = {
   saveSession(usuario, authMeta = {}) {

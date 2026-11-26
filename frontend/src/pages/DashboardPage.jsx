@@ -360,7 +360,7 @@ export default function DashboardPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Datos del usuario actual logueado (con expiración máxima de 5 minutos)
+  // Datos del usuario actual logueado (con expiración máxima de 10 minutos)
   const [currentUser] = useState(() => authService.getActiveSession());
 
   useEffect(() => {

@@ -167,7 +167,7 @@ export const login = async (req, res) => {
     // Login exitoso: reiniciar contador de intentos fallidos de esta IP
     await clearFailedLoginAttempts(req);
 
-    // 6. Preparar datos de sesión seguros con vigencia máxima de 5 minutos
+    // 6. Preparar datos de sesión seguros con vigencia máxima de 10 minutos
     const nombreCompleto = perfilFound?.nombre_completo || userFound.usuario;
     const cedula = perfilFound ? `${perfilFound.tipo_documento}-${perfilFound.cedula}` : (userFound.cedula || 'V-00000000');
 

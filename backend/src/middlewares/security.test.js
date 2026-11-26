@@ -3,8 +3,10 @@ import mongoose from 'mongoose';
 import test from 'node:test';
 import {
   checkLoginIpBlock,
+  createSessionToken,
   requireTrustedOrigin,
-  setSessionCookie
+  setSessionCookie,
+  verifySessionToken
 } from './security.js';
 
 test('requires an exact allowlisted origin for state-changing requests', () => {
@@ -76,7 +78,28 @@ test('sets the authentication cookie HttpOnly, SameSite strict and Secure in pro
   assert.equal(cookieOptions.httpOnly, true);
   assert.equal(cookieOptions.secure, true);
   assert.equal(cookieOptions.sameSite, 'strict');
+  assert.equal(cookieOptions.maxAge, 10 * 60 * 1000);
   assert.equal(cookieOptions.path, '/api');
+});
+
+test('expires the signed session exactly ten minutes after login', () => {
+  const previousSecret = process.env.SESSION_SECRET;
+  process.env.SESSION_SECRET = 'test-session-secret-with-more-than-32-characters';
+
+  try {
+    const session = createSessionToken({ usuario: 'test-user' }, '127.0.0.1');
+    const verification = verifySessionToken(session.token, '127.0.0.1');
+
+    assert.equal(session.sessionDurationMs, 10 * 60 * 1000);
+    assert.equal(session.expiresAt - verification.payload.iat, 10 * 60 * 1000);
+    assert.equal(verification.valid, true);
+  } finally {
+    if (previousSecret === undefined) {
+      delete process.env.SESSION_SECRET;
+    } else {
+      process.env.SESSION_SECRET = previousSecret;
+    }
+  }
 });
 
 test('reduces an existing login lock to a one-minute cooldown', async () => {

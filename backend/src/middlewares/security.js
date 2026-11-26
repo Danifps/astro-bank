@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import { BlacklistedAddress } from '../models/BlacklistedAddress.js';
 
 const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
-const SESSION_TTL_MS = 5 * 60 * 1000; // 5 minutos máximos de sesión activa
+const SESSION_TTL_MS = 10 * 60 * 1000; // 10 minutos máximos de sesión activa
 const SESSION_COOKIE_NAME = 'astro_session';
 const LOGIN_FAILURE_LIMIT = 5;
 const LOGIN_FAILURE_WINDOW_MS = 15 * 60 * 1000;
@@ -333,7 +333,7 @@ export function requireTrustedOrigin(req, res, next) {
 }
 
 /**
- * Firma y verifica tokens de sesión con expiración estricta de 5 minutos.
+ * Firma y verifica tokens de sesión con expiración estricta de 10 minutos.
  * El token incluye la IP del cliente para prevenir robo y reutilización.
  */
 export function createSessionToken(userPayload, clientIp) {
@@ -413,7 +413,7 @@ export function requireActiveSession(req, res, next) {
       ok: false,
       expired: result.reason === 'expired',
       mensaje: result.reason === 'expired'
-        ? 'Tu sesión expiró al alcanzar el tiempo máximo de 5 minutos. Inicia sesión nuevamente.'
+        ? 'Tu sesión expiró al alcanzar el tiempo máximo de 10 minutos. Inicia sesión nuevamente.'
         : isIpMismatch
           ? 'Token inválido: tu sesión fue iniciada desde una dirección IP diferente.'
           : 'Sesión inválida o no autorizada.'
