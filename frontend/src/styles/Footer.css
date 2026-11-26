@@ -21,7 +21,7 @@
 }
 
 .footer-col-brand {
-  max-width: 380px;
+  max-width: 330px;
 }
 
 .footer-logo-img {
@@ -30,8 +30,7 @@
   object-fit: contain;
   align-self: flex-start;
   margin-top: -100px;
-  margin-bottom: -90px;
-  margin-left: -31px;
+  margin-bottom: -70px;
 }
 
 .footer-brand-text {
@@ -74,7 +73,7 @@
 
 .footer-links-list li a:hover {
   color: var(--primary);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 @media (max-width: 860px) {

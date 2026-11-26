@@ -106,8 +106,10 @@ a {
   transition: all 0.2s ease;
 }
 
-a:hover {
-  text-decoration: underline;
+a:hover,
+a:focus,
+a:active {
+  text-decoration: none;
 }
 
 #root {

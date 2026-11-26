@@ -1,12 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Home,
   CreditCard,
   Receipt,
   ArrowLeftRight,
   History,
-  User,
   LogOut,
   Bell,
   ChevronDown,
@@ -16,11 +15,179 @@ import {
   X,
   Clock,
   Check,
-  ArrowLeft,
-  FileText
+  FileText,
+  PanelLeft
 } from 'lucide-react';
 import logotipoImg from '../assets/logotipo.png';
+import logoPhotoroomImg from '../assets/logo-Photoroom.png';
 import '../styles/Dashboard.css';
+
+/**
+ * Retorna el saludo dinámico según la hora actual del servidor / cliente:
+ * - 05:00 a 11:59: "Buenos días"
+ * - 12:00 a 18:59: "Buenas tardes"
+ * - 19:00 a 04:59: "Buenas noches"
+ */
+const getTimeGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) {
+    return 'Buenos días';
+  } else if (hour >= 12 && hour < 19) {
+    return 'Buenas tardes';
+  } else {
+    return 'Buenas noches';
+  }
+};
+
+/**
+ * Mini gráfica financiera de evolución de saldo / uso de crédito
+ * ubicada en el espacio en blanco de la tarjeta "Mi Crédito Activo" por encima de la barra de progreso.
+ */
+function CreditSparkline({ tab = 'general' }) {
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+
+  const months = ['Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov'];
+  const values = tab === 'general'
+    ? [142000, 185000, 168000, 215000, 202000, 243234.32]
+    : [620000, 710000, 680000, 840000, 920000, 1006698.32];
+
+  const min = Math.min(...values) * 0.85;
+  const max = Math.max(...values) * 1.08;
+  const w = 520;
+  const h = 110;
+  const topPad = 12;
+  const bottomPad = 10;
+
+  const points = values.map((v, i) => {
+    const x = 18 + (i / (values.length - 1)) * (w - 36);
+    const y = topPad + (1 - (v - min) / (max - min)) * (h - topPad - bottomPad);
+    return {
+      x,
+      y,
+      xPct: (x / w) * 100,
+      yPct: (y / h) * 100,
+      v,
+      m: months[i]
+    };
+  });
+
+  // Construcción de curva bezier cúbica suave
+  let pathD = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[i === 0 ? i : i - 1];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[i + 2] || p2;
+
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+    pathD += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+  }
+
+  const areaD = `${pathD} L ${points[points.length - 1].x.toFixed(1)} ${h} L ${points[0].x.toFixed(1)} ${h} Z`;
+
+  return (
+    <div className="credit-sparkline-wrap">
+      <div className="credit-sparkline-meta">
+        <span className="credit-sparkline-badge">
+          {tab === 'general' ? '+14.2%' : '+21.5%'}
+        </span>
+      </div>
+
+      <div className="credit-sparkline-chart-area">
+        <svg
+          viewBox={`0 0 ${w} ${h}`}
+          className="credit-sparkline-svg"
+          preserveAspectRatio="none"
+          aria-label="Gráfica de evolución de saldo"
+        >
+          <defs>
+            <linearGradient id={`sparklineGrad-${tab}`} x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#0000FF" stopOpacity="0.18" />
+              <stop offset="100%" stopColor="#0000FF" stopOpacity="0.0" />
+            </linearGradient>
+          </defs>
+
+          {/* Líneas guía punteadas horizontales */}
+          <line x1="10" y1={h * 0.30} x2={w - 10} y2={h * 0.30} stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+          <line x1="10" y1={h * 0.66} x2={w - 10} y2={h * 0.66} stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+
+          {/* Área sombreada con gradiente */}
+          <path d={areaD} fill={`url(#sparklineGrad-${tab})`} />
+
+          {/* Línea de tendencia con grosor uniforme */}
+          <path
+            d={pathD}
+            fill="none"
+            stroke="#0000FF"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+
+        {/* Puntos HTML circulares sin deformación y zonas interactivas */}
+        {points.map((pt, idx) => {
+          const isHovered = hoveredIndex === idx;
+          const isLast = idx === points.length - 1;
+          return (
+            <div
+              key={pt.m}
+              className="credit-sparkline-hit-zone"
+              style={{ left: `${pt.xPct}%` }}
+              onMouseEnter={() => setHoveredIndex(idx)}
+              onMouseLeave={() => setHoveredIndex(null)}
+            >
+              {isHovered && <div className="credit-sparkline-vguide" />}
+              {(isHovered || isLast) && (
+                <span
+                  className={`credit-sparkline-dot ${isHovered ? 'hovered' : ''}`}
+                  style={{ top: `${pt.yPct}%` }}
+                />
+              )}
+            </div>
+          );
+        })}
+
+        {hoveredIndex !== null && (
+          <div
+            className="credit-sparkline-tooltip"
+            style={{
+              left: `${points[hoveredIndex].xPct}%`,
+              top: `${points[hoveredIndex].yPct}%`
+            }}
+          >
+            <span>{points[hoveredIndex].m}: </span>
+            <strong>Bs {points[hoveredIndex].v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+          </div>
+        )}
+      </div>
+
+      {/* Etiquetas de meses en HTML nítido sin estiramiento */}
+      <div className="credit-sparkline-labels-row">
+        {points.map((pt, idx) => {
+          const isHovered = hoveredIndex === idx;
+          const isLast = idx === points.length - 1;
+          return (
+            <span
+              key={pt.m}
+              className={`credit-sparkline-label ${isHovered || isLast ? 'active' : ''}`}
+              style={{ left: `${pt.xPct}%` }}
+              onMouseEnter={() => setHoveredIndex(idx)}
+              onMouseLeave={() => setHoveredIndex(null)}
+            >
+              {pt.m}
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 // Cuotas pendientes para Registrar Pago según boceto
 const PENDING_CUOTAS = [
@@ -174,9 +341,40 @@ export default function DashboardPage() {
 
   // Estados interactivos principales
   const [activeNav, setActiveNav] = useState('inicio');
+
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [activeNav]);
   const [creditTab, setCreditTab] = useState('general'); // 'general' | 'financiamiento'
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Datos del usuario actual logueado
+  const [currentUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem('astro_user');
+      return stored ? JSON.parse(stored) : {
+        nombre: 'Daniel Morales',
+        perfil: 'Personas'
+      };
+    } catch {
+      return {
+        nombre: 'Daniel Morales',
+        perfil: 'Personas'
+      };
+    }
+  });
+
+  const getUserDisplayName = () => {
+    if (!currentUser?.nombre) return 'Daniel Morales';
+    if (currentUser.nombre.includes('Daniel Morales')) return 'Daniel Morales';
+    return currentUser.nombre.split(' ').slice(0, 2).join(' ');
+  };
+
+  const getUserInitial = () => {
+    const name = getUserDisplayName();
+    return name.charAt(0).toUpperCase();
+  };
 
   // Estados de solicitudes de crédito
   const [creditList, setCreditList] = useState(INITIAL_CREDIT_REQUESTS);
@@ -235,14 +433,9 @@ export default function DashboardPage() {
   const [historialList, setHistorialList] = useState(INITIAL_HISTORIAL_MOVIMIENTOS);
   const [selectedMovement, setSelectedMovement] = useState(null);
 
-  const userDropdownRef = useRef(null);
-
-  // Cerrar menú de usuario o dropdown al hacer click fuera
+  // Cerrar dropdown al hacer click fuera
   useEffect(() => {
     function handleClickOutside(event) {
-      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) {
-        setUserMenuOpen(false);
-      }
       if (cuotaDropdownRef.current && !cuotaDropdownRef.current.contains(event.target)) {
         setCuotaDropdownOpen(false);
       }
@@ -445,113 +638,175 @@ export default function DashboardPage() {
       {/* ===================================================
           1. SIDEBAR LATERAL IZQUIERDO
          =================================================== */}
-      <aside className={`dashboard-sidebar ${mobileSidebarOpen ? 'mobile-open' : ''}`}>
-        <div className="dashboard-sidebar-top">
-          {/* Logotipo */}
-          <Link to="/" className="dashboard-logo-container" title="Astro Bank">
-            <img src={logotipoImg} alt="Astro Bank" className="dashboard-logo-img" />
-          </Link>
+      <aside className={`dashboard-sidebar ${mobileSidebarOpen ? 'mobile-open' : ''} ${sidebarCollapsed ? 'collapsed' : ''}`}>
+        {/* Cabecera del Sidebar con Logotipo Centrado y Toggle Bar */}
+        <div className="dashboard-sidebar-header">
+          {!sidebarCollapsed ? (
+            <>
+              <div
+                className="dashboard-logo-display"
+                aria-label="Astro Bank"
+              >
+                <img src={logotipoImg} alt="Astro Bank" className="dashboard-logo-img" />
+              </div>
 
-          {/* Menú de Navegación Principal */}
-          <nav>
-            <ul className="dashboard-nav-list">
-              <li>
-                <button
-                  type="button"
-                  className="dashboard-nav-item"
-                  onClick={() => {
-                    setActiveNav('inicio');
-                    setMobileSidebarOpen(false);
-                  }}
-                >
-                  <Home size={19} className="dashboard-nav-icon" />
-                  <span>Inicio</span>
-                </button>
-              </li>
-
-              <li>
-                <button
-                  type="button"
-                  className={`dashboard-nav-item ${activeNav === 'credito' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveNav('credito');
-                    setMobileSidebarOpen(false);
-                  }}
-                >
-                  <CreditCard size={19} className="dashboard-nav-icon" />
-                  <span>Crédito</span>
-                </button>
-              </li>
-
-              <li>
-                <button
-                  type="button"
-                  className={`dashboard-nav-item ${activeNav === 'registrar-pago' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveNav('registrar-pago');
-                    setMobileSidebarOpen(false);
-                  }}
-                >
-                  <Receipt size={19} className="dashboard-nav-icon" />
-                  <span>Registrar Pago</span>
-                </button>
-              </li>
-
-              <li>
-                <button
-                  type="button"
-                  className={`dashboard-nav-item ${activeNav === 'transaccion' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveNav('transaccion');
-                    setMobileSidebarOpen(false);
-                  }}
-                >
-                  <ArrowLeftRight size={19} className="dashboard-nav-icon" />
-                  <span>Transacción</span>
-                </button>
-              </li>
-
-              <li>
-                <button
-                  type="button"
-                  className={`dashboard-nav-item ${activeNav === 'historial' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveNav('historial');
-                    setMobileSidebarOpen(false);
-                  }}
-                >
-                  <History size={19} className="dashboard-nav-icon" />
-                  <span>Historial de Movimientos</span>
-                </button>
-              </li>
-            </ul>
-          </nav>
+              <button
+                type="button"
+                className="dashboard-sidebar-toggle-btn"
+                onClick={() => setSidebarCollapsed(true)}
+                title="Contraer barra lateral"
+                aria-label="Contraer barra lateral"
+              >
+                <PanelLeft size={19} />
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              className="dashboard-sidebar-star-btn"
+              onClick={() => setSidebarCollapsed(false)}
+              title="Astro Bank - Expandir barra lateral"
+              aria-label="Astro Bank - Expandir barra lateral"
+            >
+              <img src={logoPhotoroomImg} alt="Astro Bank" className="dashboard-sidebar-star-img" />
+            </button>
+          )}
         </div>
 
-        {/* Opciones Inferiores: Mi Perfil y Cerrar Sesión */}
-        <div className="dashboard-sidebar-bottom">
-          <button
-            type="button"
-            className={`dashboard-nav-item ${activeNav === 'perfil' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveNav('perfil');
-              setMobileSidebarOpen(false);
-            }}
-          >
-            <User size={19} className="dashboard-nav-icon" />
-            <span>Mi Perfil</span>
-          </button>
+        {/* Contenedor de Navegación Estructurada */}
+        <div className="dashboard-sidebar-nav-container">
+          <div className="dashboard-sidebar-group">
+            <nav aria-label="Navegación principal">
+              <ul className="dashboard-nav-list">
+                <li>
+                  <button
+                    type="button"
+                    className={`dashboard-nav-item ${activeNav === 'inicio' ? 'active' : ''}`}
+                    title="Inicio"
+                    onClick={() => {
+                      setActiveNav('inicio');
+                      setMobileSidebarOpen(false);
+                    }}
+                  >
+                    <Home size={19} className="dashboard-nav-icon" />
+                    <span>Inicio</span>
+                  </button>
+                </li>
 
-          <button
-            type="button"
-            className="dashboard-nav-item logout"
-            onClick={handleLogout}
-          >
-            <LogOut size={19} className="dashboard-nav-icon" />
-            <span>Cerrar Sesión</span>
-          </button>
+                <li>
+                  <button
+                    type="button"
+                    className={`dashboard-nav-item ${activeNav === 'credito' ? 'active' : ''}`}
+                    title="Crédito"
+                    onClick={() => {
+                      setActiveNav('credito');
+                      setMobileSidebarOpen(false);
+                    }}
+                  >
+                    <CreditCard size={19} className="dashboard-nav-icon" />
+                    <span>Crédito</span>
+                  </button>
+                </li>
+
+                <li>
+                  <button
+                    type="button"
+                    className={`dashboard-nav-item ${activeNav === 'registrar-pago' ? 'active' : ''}`}
+                    title="Registrar Pago"
+                    onClick={() => {
+                      setActiveNav('registrar-pago');
+                      setMobileSidebarOpen(false);
+                    }}
+                  >
+                    <Receipt size={19} className="dashboard-nav-icon" />
+                    <span>Registrar Pago</span>
+                  </button>
+                </li>
+
+                <li>
+                  <button
+                    type="button"
+                    className={`dashboard-nav-item ${activeNav === 'transaccion' ? 'active' : ''}`}
+                    title="Transacción"
+                    onClick={() => {
+                      setActiveNav('transaccion');
+                      setMobileSidebarOpen(false);
+                    }}
+                  >
+                    <ArrowLeftRight size={19} className="dashboard-nav-icon" />
+                    <span>Transacción</span>
+                  </button>
+                </li>
+
+                <li>
+                  <button
+                    type="button"
+                    className={`dashboard-nav-item ${activeNav === 'historial' ? 'active' : ''}`}
+                    title="Historial de Movimientos"
+                    onClick={() => {
+                      setActiveNav('historial');
+                      setMobileSidebarOpen(false);
+                    }}
+                  >
+                    <History size={19} className="dashboard-nav-icon" />
+                    <span>Historial de Movimientos</span>
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+
+          {/* Perfil del Usuario en Sidebar (Estilo Gemini) y Cerrar Sesión */}
+          <div className="dashboard-sidebar-bottom">
+            <div className={`dashboard-sidebar-user-card ${sidebarCollapsed ? 'collapsed' : ''}`}>
+              <button
+                type="button"
+                className={`dashboard-user-profile-trigger ${activeNav === 'perfil' ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveNav('perfil');
+                  setMobileSidebarOpen(false);
+                }}
+                title={`Mi Perfil (${getUserDisplayName()})`}
+              >
+                <div className="dashboard-user-avatar-bubble">
+                  {getUserInitial()}
+                </div>
+                {!sidebarCollapsed && (
+                  <div className="dashboard-user-details">
+                    <span className="dashboard-user-name-text">
+                      {getUserDisplayName()}
+                    </span>
+                    <span className="dashboard-user-type-tag">
+                      {currentUser?.perfil?.includes('Invers') ? 'Inversionista' : 'Personas'}
+                    </span>
+                  </div>
+                )}
+              </button>
+
+              {!sidebarCollapsed && (
+                <button
+                  type="button"
+                  className="dashboard-sidebar-logout-btn"
+                  onClick={handleLogout}
+                  title="Cerrar Sesión"
+                  aria-label="Cerrar Sesión"
+                >
+                  <LogOut size={17} />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </aside>
+
+      {/* Backdrop para cerrar el sidebar en dispositivos móviles */}
+      {mobileSidebarOpen && (
+        <div
+          className="dashboard-sidebar-backdrop"
+          onClick={() => setMobileSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
       {/* ===================================================
           2. ÁREA PRINCIPAL
@@ -579,12 +834,14 @@ export default function DashboardPage() {
                 ? 'Transacción'
                 : activeNav === 'historial'
                 ? 'Historial de Movimientos'
-                : 'Bienvenido Enyerbert Daniel Morales Ramirez'}
+                : activeNav === 'perfil'
+                ? 'Mi Perfil'
+                : `${getTimeGreeting()}, ${getUserDisplayName()}`}
             </h1>
           </div>
 
           <div className="dashboard-header-right">
-            {/* Campana de Notificaciones */}
+            {/* Campana de Notificaciones (Único elemento en la barra superior según solicitud) */}
             <button
               type="button"
               className="dashboard-notif-btn"
@@ -594,51 +851,6 @@ export default function DashboardPage() {
               <Bell size={20} />
               <span className="dashboard-notif-badge" />
             </button>
-
-            {/* Pastilla de Perfil de Usuario con Dropdown */}
-            <div className="dashboard-user-pill" ref={userDropdownRef}>
-              <button
-                type="button"
-                className={`dashboard-user-trigger ${userMenuOpen ? 'active' : ''}`}
-                onClick={() => setUserMenuOpen((prev) => !prev)}
-                aria-expanded={userMenuOpen}
-              >
-                <div className="dashboard-user-avatar">
-                  <User size={18} />
-                </div>
-                <span className="dashboard-user-name">
-                  Enyerbert Daniel Morales Ramirez
-                </span>
-                <ChevronDown
-                  size={15}
-                  className={`dashboard-user-chevron ${userMenuOpen ? 'rotated' : ''}`}
-                />
-              </button>
-
-              {userMenuOpen && (
-                <div className="dashboard-user-dropdown" role="menu">
-                  <button
-                    type="button"
-                    className="dashboard-user-dropdown-item"
-                    onClick={() => {
-                      setUserMenuOpen(false);
-                      setActiveNav('perfil');
-                    }}
-                  >
-                    <User size={16} />
-                    <span>Mi Perfil</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="dashboard-user-dropdown-item danger"
-                    onClick={handleLogout}
-                  >
-                    <LogOut size={16} />
-                    <span>Cerrar Sesión</span>
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
         </header>
 
@@ -1461,6 +1673,8 @@ export default function DashboardPage() {
                           <span className="credit-line-label">Línea general disponible:</span>
                           <div className="credit-main-amount">Bs 243.234,32</div>
 
+                          <CreditSparkline tab="general" />
+
                           <div className="credit-progress-bar-bg">
                             <div className="credit-progress-bar-fill" style={{ width: '23.4%' }} />
                           </div>
@@ -1484,6 +1698,8 @@ export default function DashboardPage() {
                         <div className="billetera-slide">
                           <span className="credit-line-label">Línea financiamiento disponible:</span>
                           <div className="credit-main-amount">Bs 1.006.698,32</div>
+
+                          <CreditSparkline tab="financiamiento" />
 
                           <div className="credit-progress-bar-bg">
                             <div className="credit-progress-bar-fill" style={{ width: '0%' }} />

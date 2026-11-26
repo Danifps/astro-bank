@@ -4,12 +4,10 @@ import '../styles/HomeCarousel.css';
 
 /**
  * ========================================================
- * CONFIGURACIÓN DE LAS IMÁGENES / SLIDES DEL CARRUSEL
+ * CONFIGURACIÓN DE LAS PUBLICACIONES / SLIDES DEL CARRUSEL
  * ========================================================
- * Para agregar tus imágenes:
- * 1. Coloca tus imágenes en 'frontend/src/assets/' (ej: banner1.jpg)
- * 2. Impórtalas o coloca la ruta en la propiedad 'image'.
- *    Ejemplo: image: '/src/assets/banner1.jpg' o 'import banner1 from ...'
+ * Ahora con soporte para Videos de Fondo en alta resolución (MP4)
+ * con fallback a imagen y CDN para máxima velocidad de carga.
  */
 const CAROUSEL_SLIDES = [
   {
@@ -17,7 +15,9 @@ const CAROUSEL_SLIDES = [
     tag: 'Banca Digital Astro',
     title: 'Tu futuro financiero despega con Astro Bank',
     subtitle: 'Créditos rápidos, seguros y transparentes adaptados a tus metas.',
-    image: '', // <-- AGREGA AQUÍ TU PRIMERA IMAGEN
+    video: '/videos/hero-slide-1.mp4',
+    fallbackVideo: 'https://videos.pexels.com/video-files/4109600/4109600-hd_1280_720_25fps.mp4',
+    image: 'https://images.unsplash.com/photo-1556742049-0a67c5574f73?auto=format&fit=crop&w=1400&q=80',
     bgColor: '#0F172A'
   },
   {
@@ -25,7 +25,9 @@ const CAROUSEL_SLIDES = [
     tag: 'Créditos Personales',
     title: 'Financiamiento ágil al instante',
     subtitle: 'Solicita tu crédito en minutos sin papeleos innecesarios.',
-    image: '', // <-- AGREGA AQUÍ TU SEGUNDA IMAGEN
+    video: '/videos/hero-slide-2.mp4',
+    fallbackVideo: 'https://videos.pexels.com/video-files/4873123/4873123-hd_1280_720_25fps.mp4',
+    image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1400&q=80',
     bgColor: '#1E293B'
   },
   {
@@ -33,7 +35,9 @@ const CAROUSEL_SLIDES = [
     tag: 'Inversiones',
     title: 'Haz crecer tu patrimonio de forma segura',
     subtitle: 'Rendimientos garantizados con el respaldo que necesitas.',
-    image: '', // <-- AGREGA AQUÍ TU TERCERA IMAGEN
+    video: '/videos/hero-slide-3.mp4',
+    fallbackVideo: 'https://videos.pexels.com/video-files/3196061/3196061-hd_1280_720_25fps.mp4',
+    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1400&q=80',
     bgColor: '#0284C7'
   }
 ];
@@ -42,6 +46,7 @@ export default function HomeCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const timeoutRef = useRef(null);
+  const videoRefs = useRef([]);
 
   const totalSlides = CAROUSEL_SLIDES.length;
 
@@ -57,12 +62,26 @@ export default function HomeCarousel() {
     setCurrentIndex(index);
   };
 
-  // Efecto de cambio automático (pasa poco a poco cada 4.5 segundos)
+  // Reproducir video activo al cambiar de slide y pausar los inactivos para rendimiento óptimo
+  useEffect(() => {
+    videoRefs.current.forEach((vid, idx) => {
+      if (vid) {
+        if (idx === currentIndex) {
+          vid.currentTime = 0;
+          vid.play().catch(() => {});
+        } else {
+          vid.pause();
+        }
+      }
+    });
+  }, [currentIndex]);
+
+  // Efecto de cambio automático suave cada 5.5 segundos
   useEffect(() => {
     if (!isPaused) {
       timeoutRef.current = setTimeout(() => {
         goToNext();
-      }, 4500);
+      }, 5500);
     }
 
     return () => {
@@ -91,8 +110,29 @@ export default function HomeCarousel() {
               className="home-carousel-slide"
               style={{ backgroundColor: slide.bgColor }}
             >
-              {/* Imagen del Slide o Marcador de posición */}
-              {slide.image ? (
+              {/* Video o Imagen de Fondo */}
+              {slide.video ? (
+                <video
+                  ref={(el) => (videoRefs.current[index] = el)}
+                  className="home-carousel-video"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="auto"
+                  poster={slide.image}
+                  onLoadedMetadata={(e) => {
+                    e.currentTarget.muted = true;
+                    if (index === currentIndex) {
+                      e.currentTarget.play().catch(() => {});
+                    }
+                  }}
+                >
+                  <source src={slide.video} type="video/mp4" />
+                  {slide.fallbackVideo && <source src={slide.fallbackVideo} type="video/mp4" />}
+                  {slide.image && <img src={slide.image} alt={slide.title} className="home-carousel-img" />}
+                </video>
+              ) : slide.image ? (
                 <img
                   src={slide.image}
                   alt={slide.title}
@@ -103,17 +143,16 @@ export default function HomeCarousel() {
                 <div className="home-carousel-placeholder">
                   <div className="home-carousel-placeholder-badge">
                     <ImageIcon size={16} />
-                    <span>Espacio reservado para Imagen #{slide.id}</span>
+                    <span>Espacio reservado para Video #{slide.id}</span>
                   </div>
                 </div>
               )}
 
-              {/* Capa de contraste */}
+              {/* Capa oscura suave para asegurar legibilidad cinematográfica */}
               <div className="home-carousel-overlay" />
 
               {/* Contenido textual del Slide */}
               <div className="home-carousel-content">
-                <span className="home-carousel-tag">{slide.tag}</span>
                 <h2 className="home-carousel-title">{slide.title}</h2>
                 <p className="home-carousel-subtitle">{slide.subtitle}</p>
               </div>
@@ -121,41 +160,44 @@ export default function HomeCarousel() {
           ))}
         </div>
 
-        {/* Flecha Anterior */}
-        <button
-          type="button"
-          className="home-carousel-arrow prev"
-          onClick={goToPrev}
-          aria-label="Slide anterior"
-        >
-          <ChevronLeft size={22} />
-        </button>
+        {/* Navegación sutil y minimalista: flechas y burbujas sin fondo y más abajo */}
+        <div className="home-carousel-controls">
+          {/* Flecha Anterior */}
+          <button
+            type="button"
+            className="home-carousel-nav-btn prev"
+            onClick={goToPrev}
+            aria-label="Publicación anterior"
+          >
+            <ChevronLeft size={15} />
+          </button>
 
-        {/* Flecha Siguiente */}
-        <button
-          type="button"
-          className="home-carousel-arrow next"
-          onClick={goToNext}
-          aria-label="Siguiente slide"
-        >
-          <ChevronRight size={22} />
-        </button>
+          {/* Burbujas de Navegación (Dots) */}
+          <div className="home-carousel-dots">
+            {CAROUSEL_SLIDES.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                className={`home-carousel-dot ${index === currentIndex ? 'active' : ''}`}
+                onClick={() => goToSlide(index)}
+                aria-label={`Ir a publicación ${index + 1}`}
+                aria-current={index === currentIndex ? 'true' : 'false'}
+              />
+            ))}
+          </div>
 
-        {/* Indicadores de posición (Dots) */}
-        <div className="home-carousel-dots">
-          {CAROUSEL_SLIDES.map((_, index) => (
-            <button
-              key={index}
-              type="button"
-              className={`home-carousel-dot ${index === currentIndex ? 'active' : ''}`}
-              onClick={() => goToSlide(index)}
-              aria-label={`Ir al slide ${index + 1}`}
-              aria-current={index === currentIndex ? 'true' : 'false'}
-            />
-          ))}
+          {/* Flecha Siguiente */}
+          <button
+            type="button"
+            className="home-carousel-nav-btn next"
+            onClick={goToNext}
+            aria-label="Siguiente publicación"
+          >
+            <ChevronRight size={15} />
+          </button>
         </div>
+
       </div>
     </section>
   );
 }
-

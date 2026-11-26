@@ -6,8 +6,12 @@ import CreditHeroSection from '../components/CreditHeroSection';
 import CardsCarousel from '../components/CardsCarousel';
 import QuickMoneyCTA from '../components/QuickMoneyCTA';
 import Footer from '../components/Footer';
+import BackgroundMusicMute from '../components/BackgroundMusicMute';
+import { useBackgroundMusic } from '../hooks/useBackgroundMusic';
 
 export default function LandingPage() {
+  const { muted, toggleMute } = useBackgroundMusic();
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* 1. Menú Principal */}
@@ -36,6 +40,9 @@ export default function LandingPage() {
 
       {/* 3. Footer Corporativo */}
       <Footer />
+
+      {/* Botón superdiscreto para mutear la música corporativa de fondo */}
+      <BackgroundMusicMute muted={muted} toggleMute={toggleMute} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { Wallet, CreditCard, TrendingUp, HandCoins, Umbrella, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Wallet, CreditCard, TrendingUp, HandCoins, Umbrella, ArrowRight, X, Check } from 'lucide-react';
 import '../styles/QuickNeeds.css';
 
 const NEEDS_ITEMS = [
@@ -8,55 +8,92 @@ const NEEDS_ITEMS = [
     id: 1,
     title: 'Una Cuenta',
     icon: Wallet,
-    href: '/registro',
-    isExternal: false
+    eyebrow: 'Banca Personas',
+    description: 'Abre tu cuenta digital en minutos y gestiona tu línea de crédito, pagos móviles y transferencias desde un solo lugar.',
+    highlights: [
+      'Registro progresivo en 6 pasos simples',
+      'Acceso inmediato a Billetera General y Financiamiento',
+      'Control en tiempo real de movimientos y cuotas'
+    ],
+    ctaLabel: 'Ir a Registro',
+    ctaTo: '/registro'
   },
   {
     id: 2,
     title: 'Una Tarjeta',
     icon: CreditCard,
-    href: '#tarjetas',
-    isExternal: true
+    eyebrow: 'Medios de Pago',
+    description: 'Utiliza tu línea de crédito en comercios aliados de tecnología, hogar, moda, servicios y bienestar con cuotas claras.',
+    highlights: [
+      'Respaldo sobre tu Línea General disponible',
+      'Compras financiadas en comercios aliados',
+      'Seguimiento de consumos y fechas de corte'
+    ],
+    ctaLabel: 'Solicitar ahora',
+    ctaTo: '/registro'
   },
   {
     id: 3,
     title: 'Productos de Inversión',
     icon: TrendingUp,
-    href: '#inversiones',
-    isExternal: true
+    eyebrow: 'Portal Inversionistas',
+    description: 'Participa en el ecosistema de banca distribuida respaldando líneas de crédito con visibilidad sobre rendimiento y trazabilidad.',
+    highlights: [
+      'Portal dedicado para perfil Inversionista',
+      'Diversificación entre líneas generales y plazos fijos',
+      'Monitoreo de evolución semestral y retorno'
+    ],
+    ctaLabel: 'Ver información para Inversionistas',
+    ctaTo: '/para-inversionistas'
   },
   {
     id: 4,
     title: 'Financiamiento',
     icon: HandCoins,
-    href: '#financiamiento',
-    isExternal: true
+    eyebrow: 'Soluciones de Crédito',
+    description: 'Accede a planes de financiamiento a mediano plazo o crédito rotativo adaptados a tus proyectos personales.',
+    highlights: [
+      'Plazos definidos de 6 o 12 cuotas',
+      'Tasa de referencia clara desde la solicitud',
+      'Abonos rápidos por Pagomóvil, transferencia o débito'
+    ],
+    ctaLabel: 'Explorar Soluciones de Crédito',
+    ctaTo: '/soluciones-de-credito'
   },
   {
     id: 5,
     title: 'Un Seguro',
     icon: Umbrella,
-    href: '#seguros',
-    isExternal: true
+    eyebrow: 'Protección y Respaldo',
+    description: 'Resguarda tus compromisos crediticios y operaciones digitales con coberturas diseñadas para darte tranquilidad.',
+    highlights: [
+      'Protección sobre saldo pendiente de crédito',
+      'Resguardo de operaciones y transferencias digitales',
+      'Trazabilidad y soporte ante imprevistos'
+    ],
+    ctaLabel: 'Ver detalles de Seguros',
+    ctaTo: '/seguros'
   }
 ];
 
 export default function QuickNeeds() {
+  const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
+  const [isEntered, setIsEntered] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
   const sectionRef = useRef(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        // Se activa cuando el usuario hace scroll y entra en la sección
         if (entry.isIntersecting) {
           setIsVisible(true);
-          observer.disconnect(); // Una sola vez para mantener el estado
+          observer.disconnect();
         }
       },
       {
-        threshold: 0.15,
-        rootMargin: '0px 0px -40px 0px'
+        threshold: 0.5,
+        rootMargin: '0px 0px -20px 0px'
       }
     );
 
@@ -67,70 +104,137 @@ export default function QuickNeeds() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (isVisible) {
+      const timer = setTimeout(() => {
+        setIsEntered(true);
+      }, 850);
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible]);
+
+  useEffect(() => {
+    if (!selectedItem) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setSelectedItem(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedItem]);
+
+  const handleModalNavigate = (to) => {
+    setSelectedItem(null);
+    navigate(to);
+  };
+
+  const SelectedIcon = selectedItem?.icon;
+
   return (
     <section
       ref={sectionRef}
-      className={`quick-needs-section ${isVisible ? 'visible' : ''}`}
+      className={`quick-needs-section ${isVisible ? 'visible' : ''} ${isEntered ? 'entered' : ''}`}
       aria-label="Accesos rápidos a productos"
     >
       <div className="quick-needs-container">
-        
-        {/* Título en formato de pregunta */}
         <div className="quick-needs-header">
           <h2 className="quick-needs-title">Cuéntanos, ¿qué necesitas?</h2>
         </div>
 
-        {/* Cuadrícula de 5 tarjetas con animación de elevación escalonada */}
         <div className="quick-needs-grid">
           {NEEDS_ITEMS.map((item, index) => {
             const IconComponent = item.icon;
-            // Retraso escalonado de 100ms entre cada tarjeta para que entren en cascada fluida
-            const delay = `${index * 110}ms`;
+            const style = { '--entrance-delay': `${index * 80}ms` };
 
-            const CardContent = (
-              <>
-                {/* Ícono superior */}
+            return (
+              <button
+                key={item.id}
+                type="button"
+                className="quick-needs-card"
+                style={style}
+                onClick={() => setSelectedItem(item)}
+                title={`Ver más sobre ${item.title}`}
+              >
                 <div className="quick-needs-icon-wrapper">
                   <IconComponent size={26} strokeWidth={2} />
                 </div>
 
-                {/* Título de la necesidad */}
                 <h3 className="quick-needs-card-title">{item.title}</h3>
 
-                {/* Flecha inferior derecha interactiva */}
                 <div className="quick-needs-arrow-row">
                   <span className="quick-needs-arrow-btn">
                     <ArrowRight size={18} strokeWidth={2.2} />
                   </span>
                 </div>
-              </>
-            );
-
-            return item.isExternal ? (
-              <a
-                key={item.id}
-                href={item.href}
-                className="quick-needs-card"
-                style={{ transitionDelay: isVisible ? delay : '0ms' }}
-                title={`Ver más sobre ${item.title}`}
-              >
-                {CardContent}
-              </a>
-            ) : (
-              <Link
-                key={item.id}
-                to={item.href}
-                className="quick-needs-card"
-                style={{ transitionDelay: isVisible ? delay : '0ms' }}
-                title={`Abrir ${item.title}`}
-              >
-                {CardContent}
-              </Link>
+              </button>
             );
           })}
         </div>
-
       </div>
+
+      {selectedItem && (
+        <div
+          className="quick-needs-modal-backdrop"
+          onClick={() => setSelectedItem(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="quick-needs-modal-title"
+        >
+          <div
+            className="quick-needs-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="quick-needs-modal-close"
+              onClick={() => setSelectedItem(null)}
+              aria-label="Cerrar ventana"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="quick-needs-modal-header">
+              <div className="quick-needs-modal-icon">
+                {SelectedIcon && <SelectedIcon size={24} strokeWidth={2} />}
+              </div>
+              <div>
+                <span className="quick-needs-modal-eyebrow">{selectedItem.eyebrow}</span>
+                <h3 id="quick-needs-modal-title" className="quick-needs-modal-title">
+                  {selectedItem.title}
+                </h3>
+              </div>
+            </div>
+
+            <p className="quick-needs-modal-desc">{selectedItem.description}</p>
+
+            <ul className="quick-needs-modal-list">
+              {selectedItem.highlights.map((point) => (
+                <li key={point}>
+                  <Check size={16} className="quick-needs-modal-check" />
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="quick-needs-modal-actions">
+              <button
+                type="button"
+                className="quick-needs-modal-btn-secondary"
+                onClick={() => setSelectedItem(null)}
+              >
+                Cerrar
+              </button>
+              <button
+                type="button"
+                className="quick-needs-modal-btn-primary"
+                onClick={() => handleModalNavigate(selectedItem.ctaTo)}
+              >
+                <span>{selectedItem.ctaLabel}</span>
+                <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

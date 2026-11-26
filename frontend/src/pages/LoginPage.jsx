@@ -1,13 +1,17 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import AuthLayout from '../components/AuthLayout';
+import PersonasIllustration from '../components/PersonasIllustration';
 import '../styles/Login.css';
 
 export default function LoginPage() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     usuarioOCedula: '',
     claveAcceso: ''
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
@@ -26,14 +30,36 @@ export default function LoginPage() {
       return;
     }
 
-    console.log('Login payload preparado para backend:', formData);
+    console.log('Login Personas payload preparado para backend:', formData);
+    navigate('/dashboard');
+  };
+
+  // Acceso rápido con credenciales hardcodeadas para entrar directo al Dashboard
+  const handleDemoAccess = () => {
+    const hardcodedUser = {
+      usuarioOCedula: 'V-28192045',
+      claveAcceso: 'astro2026'
+    };
+    setFormData(hardcodedUser);
+
+    localStorage.setItem('astro_user', JSON.stringify({
+      nombre: 'Daniel Morales',
+      cedula: 'V-28192045',
+      usuario: 'dmorales',
+      perfil: 'Personas'
+    }));
+
     navigate('/dashboard');
   };
 
   return (
-    <AuthLayout>
+    <AuthLayout visual={<PersonasIllustration />}>
       <div className="auth-form-card">
-        <h1 className="auth-page-title">Bienvenido a Astro Bank</h1>
+        {/* Título y subtítulo claros */}
+        <h1 className="auth-page-title">Banca Personas</h1>
+        <p className="auth-page-subtitle">
+          Ingresa a tu cuenta personal para consultar saldos, solicitar créditos y realizar transferencias.
+        </p>
 
         {error && (
           <div className="auth-alert-error" role="alert">
@@ -53,7 +79,7 @@ export default function LoginPage() {
               name="usuarioOCedula"
               value={formData.usuarioOCedula}
               onChange={handleChange}
-              placeholder="Usuario o número de cédula"
+              placeholder="Ej: V-12345678 o tu usuario"
               className="bank-input"
               autoComplete="username"
               required
@@ -65,35 +91,73 @@ export default function LoginPage() {
             <label className="bank-label" htmlFor="claveAcceso">
               Clave de acceso
             </label>
-            <input
-              type="password"
-              id="claveAcceso"
-              name="claveAcceso"
-              value={formData.claveAcceso}
-              onChange={handleChange}
-              placeholder="Clave de acceso"
-              className="bank-input"
-              autoComplete="current-password"
-              required
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="claveAcceso"
+                name="claveAcceso"
+                value={formData.claveAcceso}
+                onChange={handleChange}
+                placeholder="Ingresa tu clave de acceso"
+                className="bank-input"
+                autoComplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword((prev) => !prev)}
+                title={showPassword ? 'Ocultar clave' : 'Ver clave'}
+                aria-label={showPassword ? 'Ocultar clave' : 'Ver clave'}
+              >
+                {showPassword ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Fila de acción: Botón Ingresar + Olvidó su clave */}
           <div className="login-actions-row">
             <button type="submit" className="bank-btn bank-btn-primary">
-              Ingresar
+              Ingresar a Banca Personas
             </button>
             <a href="#olvide-clave" className="forgot-password-link">
-              Olvidé o desbloqueo de clave
+              ¿Olvidaste tu clave?
             </a>
+          </div>
+
+          {/* Botón sutil con datos hardcodeados para ir directo al Dashboard */}
+          <div className="demo-access-wrapper">
+            <button
+              type="button"
+              className="bank-btn-demo"
+              onClick={handleDemoAccess}
+              title="Ingresar directamente al Dashboard con usuario de prueba"
+            >
+              <span className="demo-badge-pill">DEMO</span>
+              <span>Entrar al Dashboard (Datos de prueba)</span>
+              <ArrowRight size={14} />
+            </button>
+            <span className="demo-credentials-note">
+              Usuario: <strong>V-28192045</strong> &nbsp;•&nbsp; Clave: <strong>astro2026</strong>
+            </span>
           </div>
 
           {/* Enlace para ir a registrarse */}
           <div className="register-switch-container">
             <span className="register-switch-text">
-              ¿Aún no tienes cuenta?{' '}
+              ¿Aún no eres cliente?{' '}
               <Link to="/registro" className="register-switch-link">
-                Regístrate aquí
+                Abre tu cuenta aquí
               </Link>
             </span>
           </div>

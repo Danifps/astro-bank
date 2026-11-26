@@ -1,0 +1,17 @@
+{
+  "tipo_documento": "V",
+  "cedula": "19876543",
+  "nombre_completo": "Carlos Alberto Mendoza Rivas",
+  "genero": "Masculino",
+  "direccion": "Av. Bolívar, Maracay, Aragua",
+  "operadora_telefono": "Movistar",
+  "numero_telefono": "0414-5550142",
+  "correo_electronico": "carlos.mendoza.test@ejemplo.com",
+  "imagen_documento": "uploads/documentos/v19876543_cedula.jpg",
+  "tipo_usuario": "cliente",
+  "datos_laborales": {
+    "empresa": "Comercializadora El Sol C.A.",
+    "cargo": "Analista Administrativo",
+    "ingresos_mensuales": 1800.00
+  }
+}

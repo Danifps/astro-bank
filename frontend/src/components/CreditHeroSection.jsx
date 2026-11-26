@@ -1,22 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Image as ImageIcon } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import TiltedCard from './TiltedCard';
+import AstroCreditCard from './AstroCreditCard';
 import '../styles/CreditHeroSection.css';
 
-/**
- * ========================================================
- * IMAGEN DEL HERO DIVIDIDO
- * ========================================================
- * Para colocar tu foto:
- * 1. Coloca tu imagen en 'frontend/src/assets/' (ej: foto.png)
- * 2. Asigna la ruta aquí o impórtala:
- *    Ejemplo: const HERO_IMAGE = '/src/assets/foto.png'
- */
-const HERO_IMAGE = ''; // <-- AGREGA AQUÍ TU FOTO ('/src/assets/foto.png')
-
-export default function CreditHeroSection({ imageSrc = HERO_IMAGE }) {
+export default function CreditHeroSection() {
   const [isVisible, setIsVisible] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
   const sectionRef = useRef(null);
+
+  // Formatear el contador en un número de tarjeta de 16 dígitos agrupados de 4 en 4
+  const formatCardNumber = (count) => {
+    const padded = String(count).padStart(16, '0');
+    return `${padded.slice(0, 4)}  ${padded.slice(4, 8)}  ${padded.slice(8, 12)}  ${padded.slice(12, 16)}`;
+  };
+
+  const handleCardClick = () => {
+    setClickCount((prev) => prev + 1);
+  };
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -60,30 +62,31 @@ export default function CreditHeroSection({ imageSrc = HERO_IMAGE }) {
           </p>
 
           <Link to="/registro" className="credit-hero-btn">
-            Activa tu credito
+            <span>Activa tu crédito</span>
+            <ArrowRight size={18} className="credit-hero-btn-arrow" />
           </Link>
         </div>
 
-        {/* Columna Derecha: Contenedor para foto.png */}
+        {/* Columna Derecha: Tarjeta de Crédito 3D Levitando a todo color */}
         <div className="credit-hero-right">
-          <div className="credit-hero-image-wrapper">
-            {imageSrc ? (
-              <img
-                src={imageSrc}
-                alt="Tu crédito, como tú quieras - Astro Bank"
-                className="credit-hero-img"
+          <div className="credit-hero-card-stage">
+            {/* Halo de luz cósmico de fondo */}
+            <div className="credit-hero-ambient-glow" aria-hidden="true" />
+            
+            <TiltedCard
+              maxTilt={22}
+              scaleOnHover={1.06}
+              perspective={1200}
+              showGlare={true}
+              showHolo={true}
+              onClick={handleCardClick}
+            >
+              <AstroCreditCard
+                cardNumber={formatCardNumber(clickCount)}
+                cardHolder="DANIEL MORALES"
+                expiryDate="08/29"
               />
-            ) : (
-              <div className="credit-hero-placeholder">
-                <div className="credit-hero-placeholder-icon">
-                  <ImageIcon size={28} />
-                </div>
-                <span className="credit-hero-placeholder-tag">foto.png</span>
-                <span className="credit-hero-placeholder-hint">
-                  Espacio reservado para tu imagen lateral
-                </span>
-              </div>
-            )}
+            </TiltedCard>
           </div>
         </div>
 
@@ -91,4 +94,3 @@ export default function CreditHeroSection({ imageSrc = HERO_IMAGE }) {
     </section>
   );
 }
-

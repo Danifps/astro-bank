@@ -44,14 +44,12 @@ export default function TypographicBanner() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        // Se activa la animación una vez el usuario hace scroll hasta la sección
         if (entry.isIntersecting) {
           setIsVisible(true);
-          observer.disconnect(); // Solo se dispara la primera vez
         }
       },
       {
-        threshold: 0.2, // Activa al ver el 20% del banner
+        threshold: 0.15,
         rootMargin: '0px 0px -40px 0px'
       }
     );
@@ -71,14 +69,14 @@ export default function TypographicBanner() {
     >
       {/* Estrella Flotante Superior Izquierda */}
       <div className="floating-star-wrapper star-top-left">
-        <AstroStar />
+        <AstroStar className="star-icon-anim" />
       </div>
 
       {/* Contenedor del Título Principal */}
       <div className="typographic-banner-container">
         <h2 className="typographic-banner-title">
-          <span className="typographic-banner-line">El Crédito</span>
-          <span className="typographic-banner-line">
+          <span className="typographic-banner-line typographic-line-1">El Crédito</span>
+          <span className="typographic-banner-line typographic-line-2">
             Que <span className="typographic-banner-highlight">Despega</span> contigo
           </span>
         </h2>
@@ -86,12 +84,12 @@ export default function TypographicBanner() {
 
       {/* Estrella Flotante Inferior Derecha */}
       <div className="floating-star-wrapper star-bottom-right">
-        <AstroStar />
+        <AstroStar className="star-icon-anim" />
       </div>
 
       {/* Estrella adicional pequeña de acento */}
       <div className="floating-star-wrapper star-accent">
-        <AstroStar />
+        <AstroStar className="star-icon-anim" />
       </div>
     </section>
   );
