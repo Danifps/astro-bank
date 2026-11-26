@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import AuthLayout from '../components/AuthLayout';
 import PersonasIllustration from '../components/PersonasIllustration';
+import { authService } from '../services/authService';
 import '../styles/Login.css';
 
 export default function LoginPage() {
@@ -13,6 +14,7 @@ export default function LoginPage() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,33 +25,30 @@ export default function LoginPage() {
     if (error) setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.usuarioOCedula.trim() || !formData.claveAcceso) {
       setError('Por favor complete todos los campos');
       return;
     }
 
-    console.log('Login Personas payload preparado para backend:', formData);
-    navigate('/dashboard');
-  };
+    setLoading(true);
+    setError('');
 
-  // Acceso rápido con credenciales hardcodeadas para entrar directo al Dashboard
-  const handleDemoAccess = () => {
-    const hardcodedUser = {
-      usuarioOCedula: 'V-28192045',
-      claveAcceso: 'astro2026'
-    };
-    setFormData(hardcodedUser);
+    try {
+      const res = await authService.login(formData.usuarioOCedula, formData.claveAcceso);
 
-    localStorage.setItem('astro_user', JSON.stringify({
-      nombre: 'Daniel Morales',
-      cedula: 'V-28192045',
-      usuario: 'dmorales',
-      perfil: 'Personas'
-    }));
-
-    navigate('/dashboard');
+      if (res.ok && res.usuario) {
+        localStorage.setItem('astro_user', JSON.stringify(res.usuario));
+        navigate('/dashboard');
+      } else {
+        setError(res.mensaje || 'Error al iniciar sesión. Verifica tus credenciales.');
+      }
+    } catch {
+      setError('Error al procesar la solicitud.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -127,29 +126,12 @@ export default function LoginPage() {
 
           {/* Fila de acción: Botón Ingresar + Olvidó su clave */}
           <div className="login-actions-row">
-            <button type="submit" className="bank-btn bank-btn-primary">
-              Ingresar a Banca Personas
+            <button type="submit" className="bank-btn bank-btn-primary" disabled={loading}>
+              {loading ? 'Verificando...' : 'Ingresar a Banca Personas'}
             </button>
             <a href="#olvide-clave" className="forgot-password-link">
               ¿Olvidaste tu clave?
             </a>
-          </div>
-
-          {/* Botón sutil con datos hardcodeados para ir directo al Dashboard */}
-          <div className="demo-access-wrapper">
-            <button
-              type="button"
-              className="bank-btn-demo"
-              onClick={handleDemoAccess}
-              title="Ingresar directamente al Dashboard con usuario de prueba"
-            >
-              <span className="demo-badge-pill">DEMO</span>
-              <span>Entrar al Dashboard (Datos de prueba)</span>
-              <ArrowRight size={14} />
-            </button>
-            <span className="demo-credentials-note">
-              Usuario: <strong>V-28192045</strong> &nbsp;•&nbsp; Clave: <strong>astro2026</strong>
-            </span>
           </div>
 
           {/* Enlace para ir a registrarse */}

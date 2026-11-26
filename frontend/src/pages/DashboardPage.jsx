@@ -353,21 +353,20 @@ export default function DashboardPage() {
   const [currentUser] = useState(() => {
     try {
       const stored = localStorage.getItem('astro_user');
-      return stored ? JSON.parse(stored) : {
-        nombre: 'Daniel Morales',
-        perfil: 'Personas'
-      };
+      return stored ? JSON.parse(stored) : null;
     } catch {
-      return {
-        nombre: 'Daniel Morales',
-        perfil: 'Personas'
-      };
+      return null;
     }
   });
 
+  useEffect(() => {
+    if (!currentUser) {
+      navigate('/login');
+    }
+  }, [currentUser, navigate]);
+
   const getUserDisplayName = () => {
-    if (!currentUser?.nombre) return 'Daniel Morales';
-    if (currentUser.nombre.includes('Daniel Morales')) return 'Daniel Morales';
+    if (!currentUser?.nombre) return 'Usuario';
     return currentUser.nombre.split(' ').slice(0, 2).join(' ');
   };
 
@@ -445,6 +444,7 @@ export default function DashboardPage() {
   }, []);
 
   const handleLogout = () => {
+    localStorage.removeItem('astro_user');
     navigate('/login');
   };
 

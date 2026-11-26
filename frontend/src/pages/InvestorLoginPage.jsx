@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import AuthLayout from '../components/AuthLayout';
 import InvestorIllustration from '../components/InvestorIllustration';
+import { authService } from '../services/authService';
 import '../styles/Login.css';
 
 export default function InvestorLoginPage() {
@@ -13,6 +14,7 @@ export default function InvestorLoginPage() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,32 +25,33 @@ export default function InvestorLoginPage() {
     if (error) setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.investorIdOrEmail.trim() || !formData.claveAcceso) {
       setError('Por favor complete su ID / Correo y su Clave de Inversionista.');
       return;
     }
 
-    console.log('Login Inversionistas payload preparado para backend:', formData);
-    navigate('/dashboard');
-  };
+    setLoading(true);
+    setError('');
 
-  // Acceso rápido con credenciales demo para Inversionistas
-  const handleDemoInvestorAccess = () => {
-    const demoData = {
-      investorIdOrEmail: 'INV-89201',
-      claveAcceso: 'astroInvest2026'
-    };
-    setFormData(demoData);
+    try {
+      const res = await authService.login(formData.investorIdOrEmail, formData.claveAcceso);
 
-    localStorage.setItem('astro_user', JSON.stringify({
-      nombre: 'Daniel Morales',
-      id: 'INV-89201',
-      perfil: 'Inversionista'
-    }));
-
-    navigate('/dashboard');
+      if (res.ok && res.usuario) {
+        localStorage.setItem('astro_user', JSON.stringify({
+          ...res.usuario,
+          perfil: 'Inversionista'
+        }));
+        navigate('/dashboard');
+      } else {
+        setError(res.mensaje || 'Credenciales de inversionista inválidas.');
+      }
+    } catch {
+      setError('Error al procesar la solicitud.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -132,23 +135,6 @@ export default function InvestorLoginPage() {
             <a href="#soporte-inversores" className="forgot-password-link">
               Mesa de ayuda a inversores
             </a>
-          </div>
-
-          {/* Botón sutil con datos hardcodeados para ir directo al Dashboard de Inversionistas */}
-          <div className="demo-access-wrapper">
-            <button
-              type="button"
-              className="bank-btn-demo"
-              onClick={handleDemoInvestorAccess}
-              title="Ingresar directamente al Dashboard de Inversionistas con datos de prueba"
-            >
-              <span className="demo-badge-pill">DEMO</span>
-              <span>Entrar al Dashboard (Inversor de prueba)</span>
-              <ArrowRight size={14} />
-            </button>
-            <span className="demo-credentials-note">
-              Inversor ID: <strong>INV-89201</strong> &nbsp;•&nbsp; Clave: <strong>astroInvest2026</strong>
-            </span>
           </div>
 
           {/* Enlace para convertirse en inversionista */}

@@ -1,6 +1,30 @@
-{
-  "username": "cmendoza90",
-  "password": "$2b$10$hashFicticioSeguro123",
-  "rol": "cliente",
-  "fecha_registro": { "$date": "2026-11-18T21:00:00Z" }
-}
+[
+  {
+    "usuario": "dmorales",
+    "cedula": "24890123",
+    "contrasena": "$2b$10$tea/lWzCSnEYWRoqCXx/zOLAHj0I7eMM74kXqwIOmVi2PcGvsKwNC",
+    "rol": "cliente",
+    "fecha_registro": { "$date": "2026-11-01T09:30:00Z" }
+  },
+  {
+    "usuario": "cmendoza90",
+    "cedula": "19876543",
+    "contrasena": "$2b$10$7FkakfrhRNAJSOr8p81i9uA6oqcjeOzvJ.D8zUfbk7w4xes0n9P9m",
+    "rol": "cliente",
+    "fecha_registro": { "$date": "2026-11-18T21:00:00Z" }
+  },
+  {
+    "usuario": "mrodriguez",
+    "cedula": "22145678",
+    "contrasena": "$2b$10$6PGd/yPDRNy6eO6VSkO8qej2noTyd5I9De/YmgoujO9UcwhzmSMsu",
+    "rol": "cliente",
+    "fecha_registro": { "$date": "2026-11-20T14:15:00Z" }
+  },
+  {
+    "usuario": "vcastillo",
+    "cedula": "27345678",
+    "contrasena": "$2b$10$JbbpJx2It11THWJuXYpg2OAW6820IbXxiz9SbqhiphWblw6mjXuPW",
+    "rol": "cliente",
+    "fecha_registro": { "$date": "2026-11-22T16:45:00Z" }
+  }
+]
