@@ -1,0 +1,358 @@
+/* Estilos para Ilustraciones Visuales de Autenticación (Personas e Inversionistas) */
+
+.auth-illustration-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  user-select: none;
+}
+
+/* Resplandor ambiental de fondo (sin caja rígida ni bordes grises) */
+.illustration-ambient-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 440px;
+  height: 440px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 102, 255, 0.09) 0%, rgba(0, 210, 255, 0.05) 50%, rgba(255, 255, 255, 0) 75%);
+  pointer-events: none;
+  z-index: 0;
+  animation: pulseAura 6s ease-in-out infinite alternate;
+}
+
+@keyframes pulseAura {
+  0% { transform: translate(-50%, -50%) scale(0.96); opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) scale(1.06); opacity: 1; }
+}
+
+.illustration-composition {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: clamp(24px, 3.5vh, 44px) 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* ========================================================
+   ILUSTRACIÓN BANCA PERSONAS (Levitación 3D Idéntica a Inversionistas)
+   ======================================================== */
+.personas-static-card-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 400px;
+  max-width: 100%;
+  aspect-ratio: 1.586;
+  border-radius: 22px;
+  background: #060B1E;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  display: flex;
+  user-select: none;
+  pointer-events: none; /* Sin interactividad de clicks */
+  /* Inclinación 3D estilizada con levitación flotante */
+  transform: perspective(1100px) translateY(-5px) rotateY(-11deg) rotateX(6deg) rotateZ(-3deg);
+  box-shadow: 
+    -1px 2px 0px 1px rgba(255, 255, 255, 0.25),
+    -16px 30px 60px -10px rgba(0, 0, 255, 0.45),
+    -6px 14px 28px rgba(0, 0, 0, 0.3),
+    0 0 50px rgba(0, 210, 255, 0.22);
+  animation: floatPersonasCard 6s ease-in-out infinite alternate;
+}
+
+@keyframes floatPersonasCard {
+  0% {
+    transform: perspective(1100px) translateY(-5px) rotateY(-11deg) rotateX(6deg) rotateZ(-3deg);
+    box-shadow: 
+      -1px 2px 0px 1px rgba(255, 255, 255, 0.25),
+      -18px 36px 65px -8px rgba(0, 0, 255, 0.48),
+      -6px 16px 32px rgba(0, 0, 0, 0.32),
+      0 0 55px rgba(0, 210, 255, 0.25);
+  }
+  100% {
+    transform: perspective(1100px) translateY(6px) rotateY(-10deg) rotateX(7deg) rotateZ(-2.5deg);
+    box-shadow: 
+      -1px 2px 0px 1px rgba(255, 255, 255, 0.25),
+      -14px 24px 50px -10px rgba(0, 0, 255, 0.4),
+      -6px 12px 24px rgba(0, 0, 0, 0.28),
+      0 0 45px rgba(0, 210, 255, 0.18);
+  }
+}
+
+/* Modificadores y escala proporcional interna de la tarjeta */
+.astro-card-body {
+  cursor: default !important;
+  pointer-events: none !important;
+}
+
+.static-illustration .astro-card-body {
+  padding: 24px 26px;
+  cursor: default !important;
+  pointer-events: none !important;
+  animation: none !important;
+  transform-style: flat !important;
+}
+
+.static-illustration .astro-card-bg-gradient,
+.static-illustration .astro-card-mesh-pattern,
+.static-illustration .astro-card-starlight-glow,
+.static-illustration .astro-card-edge-highlight,
+.static-illustration .astro-card-layer-header,
+.static-illustration .astro-card-layer-chip-row,
+.static-illustration .astro-card-layer-number,
+.static-illustration .astro-card-layer-footer {
+  transform: none !important;
+  transform-style: flat !important;
+}
+
+.static-illustration .astro-card-brand-name {
+  font-size: 19px;
+}
+
+.static-illustration .astro-card-digits {
+  font-size: 17.5px;
+  letter-spacing: 2.2px;
+  white-space: nowrap;
+  animation: none !important;
+}
+
+/* Chips y Widgets Flotantes de Personas */
+.floating-widget {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 12px 18px;
+  box-shadow: 0 14px 32px -6px rgba(0, 0, 255, 0.16), 0 4px 12px rgba(0, 0, 0, 0.06);
+  position: absolute;
+  z-index: 10;
+  transition: transform 0.3s ease;
+}
+
+.widget-transfer {
+  top: 6px;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: floatWidgetTransfer 5.2s ease-in-out infinite alternate;
+}
+
+@keyframes floatWidgetTransfer {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-7px); }
+}
+
+.widget-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.widget-icon-box.success {
+  background-color: #ECFDF5;
+  color: #10B981;
+}
+
+.widget-icon-box.primary {
+  background-color: #EEF4FF;
+  color: #0000FF;
+}
+
+.widget-text-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.widget-title {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #64748B;
+}
+
+.widget-amount {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.widget-security {
+  bottom: 6px;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  animation: floatWidgetSecurity 4.8s ease-in-out infinite alternate;
+}
+
+@keyframes floatWidgetSecurity {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(7px); }
+}
+
+.widget-security-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.widget-security-sub {
+  font-size: 10.5px;
+  color: #64748B;
+}
+
+/* ========================================================
+   ILUSTRACIÓN BANCA INVERSIONISTAS
+   ======================================================== */
+.investor-chart-card {
+  width: 350px;
+  border-radius: 20px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 18px 40px -8px rgba(0, 0, 255, 0.15), 0 4px 12px rgba(0, 0, 0, 0.04);
+  padding: 22px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: floatChart 6s ease-in-out infinite alternate;
+}
+
+@keyframes floatChart {
+  0% { transform: translateY(-4px); }
+  100% { transform: translateY(6px); }
+}
+
+.chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.chart-title-area {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.chart-category {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #0000FF;
+  letter-spacing: 0.6px;
+}
+
+.chart-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.5px;
+}
+
+.chart-badge-yield {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background-color: #ECFDF5;
+  color: #10B981;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.svg-chart-container {
+  width: 100%;
+  height: 110px;
+}
+
+/* Mini tabla de distribución de activos */
+.asset-distribution-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid #F1F5F9;
+}
+
+.asset-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.asset-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.asset-dot.blue { background-color: #0000FF; }
+.asset-dot.cyan { background-color: #00D2FF; }
+.asset-dot.green { background-color: #10B981; }
+
+/* Widgets Flotantes de Inversionistas */
+.widget-investor-dividend {
+  top: 10px;
+  left: -20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: floatWidgetC 5s ease-in-out infinite alternate;
+}
+
+@keyframes floatWidgetC {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-7px); }
+}
+
+.widget-investor-badge {
+  bottom: 15px;
+  right: -15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  animation: floatWidgetD 4.8s ease-in-out infinite alternate;
+}
+
+@keyframes floatWidgetD {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(7px); }
+}
+
+@media (max-width: 1024px) {
+  .personas-static-card-wrapper {
+    width: 340px;
+  }
+  .static-illustration .astro-card-digits {
+    font-size: 15px;
+    letter-spacing: 1.8px;
+  }
+  .investor-chart-card {
+    width: 310px;
+  }
+  .floating-widget {
+    padding: 10px 14px;
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "codigo_movimiento": "MOV-INV-0001",
+  "cedula": "20456789",
+  "tipo_movimiento": "aporte",
+  "variacion_capital": 1200.00,
+  "capital_actual": 1200.00,
+  "interes_ganancia_acumulada": 95.00,
+  "moneda": "USD",
+  "fecha_movimiento": { "$date": "2026-11-18T21:10:00Z" }
+}

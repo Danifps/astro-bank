@@ -1,136 +1,32 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const connectBd = require('./config/bd');
-const Usuario = require('./models/schema_Usuarios');
-const Perfil = require('./models/schema_Perfil');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { connectDB } from './config/db.js';
+import authRoutes from './routes/authRoutes.js';
 
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 4000;      
+const port = process.env.PORT || 4000;
 
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Captura JSON malformado en el cuerpo de la petición
-app.use((err, _req, res, next) => {
-  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    return res.status(400).json({
-      estado: 'error',
-      mensaje: 'El cuerpo de la petición no es un JSON válido'
-    });
-  }
-  return next(err);
-});
+// Conexión a la base de datos MongoDB
+connectDB();
 
-function handleRouteError(res, error, baseMessage) {
-  if (error?.name === 'ValidationError' || error?.name === 'CastError') {
-    return res.status(400).json({
-      estado: 'error',
-      mensaje: `${baseMessage}: ${error.message}`
-    });
-  }
-
-  if (error?.code === 11000) {
-    return res.status(409).json({
-      estado: 'error',
-      mensaje: `${baseMessage}: registro duplicado`
-    });
-  }
-
-  return res.status(500).json({
-    estado: 'error',
-    mensaje: `${baseMessage}: ${error?.message || 'error interno del servidor'}`
-  });
-}
-
-function hasValidBody(req, res) {
-  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
-    res.status(400).json({
-      estado: 'error',
-      mensaje: 'Debe enviar un objeto JSON válido en el cuerpo de la petición'
-    });
-    return false;
-  }
-  return true;
-}
+// Rutas de la API
+app.use('/api/auth', authRoutes);
 
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok' });
-});
-
-app.post('/usuarios', async (req, res) => {
-  if (!hasValidBody(req, res)) return;
-
-  try {
-    const { username, password, rol } = req.body;
-    const nuevoUsuario = new Usuario({ username, password, rol });
-    await nuevoUsuario.save();
-
-    res.status(201).json({
-      estado: 'activo',
-      mensaje: 'Usuario creado correctamente',
-      data: {
-        _id: nuevoUsuario._id,
-        username: nuevoUsuario.username,
-        rol: nuevoUsuario.rol
-      }
-    });
-  } catch (error) {
-    handleRouteError(res, error, 'Lo sentimos, no se pudo crear el usuario');
-  }
-});
-
-app.post('/perfil', async (req, res) => {
-  if (!hasValidBody(req, res)) return;
-
-  try {
-    const {
-      tipo_documento,
-      cedula,
-      nombre_completo,
-      genero,
-      direccion,
-      operadora_telefono,
-      numero_telefono,
-      correo_electronico,
-      imagen_documento,
-      tipo_usuario,
-      datos_laborales
-    } = req.body;
-
-    const nuevoPerfil = new Perfil({
-      tipo_documento,
-      cedula,
-      nombre_completo,
-      genero,
-      direccion,
-      operadora_telefono,
-      numero_telefono,
-      correo_electronico,
-      imagen_documento,
-      tipo_usuario,
-      datos_laborales
-    });
-
-    await nuevoPerfil.save();
-
-    res.status(201).json({
-      estado: 'activo',
-      mensaje: 'Perfil creado correctamente',
-      data: nuevoPerfil
-    });
-  } catch (error) {
-    handleRouteError(res, error, 'Lo sentimos, no se pudo crear el perfil');
-  }
-});
-
-async function startServer() {
-  await connectBd();
-  app.listen(port, () => {
-    console.log(`Backend escuchando en http://localhost:${port}`);
+  res.json({
+    status: 'ok',
+    mensaje: 'Servidor Astro Bank Backend Operativo',
+    timestamp: new Date().toISOString()
   });
-}
+});
 
-startServer();
+app.listen(port, () => {
+  console.log(`Backend escuchando en http://localhost:${port}`);
+});

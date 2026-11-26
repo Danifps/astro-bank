@@ -1,0 +1,356 @@
+/* Banner Tipográfico "El Crédito Que Despega contigo" */
+.typographic-banner-section {
+  position: relative;
+  width: 100%;
+  background-color: #FFFFFF;
+  border-top: 1.5px solid #E2E8F0;
+  border-bottom: 1.5px solid #E2E8F0;
+  padding: 96px 24px;
+  overflow: hidden;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.typographic-banner-container {
+  position: relative;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  z-index: 2;
+}
+
+/* Título tipográfico grande */
+.typographic-banner-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  font-size: clamp(38px, 6vw, 72px);
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.15;
+  letter-spacing: -1.2px;
+  user-select: none;
+}
+
+/* Líneas con aceleración por hardware en GPU (Zero frame-drop, 60/120 FPS) */
+.typographic-banner-line {
+  display: block;
+  opacity: 0;
+  transform: translate3d(0, 85px, 0);
+  will-change: transform, opacity;
+}
+
+/* Línea 1: "El Crédito" (Salto elástico fluido y enérgico) */
+.typographic-banner-section.visible .typographic-line-1 {
+  animation: springJumpLine1 0.75s ease-in-out forwards;
+}
+
+/* Línea 2: "Que Despega contigo" (Segundo salto con mayor altitud e impulso) */
+.typographic-banner-section.visible .typographic-line-2 {
+  animation: springJumpLine2 0.8s ease-in-out 0.08s forwards;
+}
+
+/* Salto elástico con física armónica real (Sube -> Salta sobre la meta -> Rebote suave -> Asienta) */
+@keyframes springJumpLine1 {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 85px, 0);
+  }
+  30% {
+    opacity: 1;
+  }
+  55% {
+    transform: translate3d(0, -20px, 0); /* Salto visible por encima */
+  }
+  78% {
+    transform: translate3d(0, 5px, 0);   /* Rebote amortiguado */
+  }
+  92% {
+    transform: translate3d(0, -2px, 0);  /* Micro-asentamiento */
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes springJumpLine2 {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 105px, 0);
+  }
+  30% {
+    opacity: 1;
+  }
+  55% {
+    transform: translate3d(0, -26px, 0); /* Salto de mayor altura */
+  }
+  78% {
+    transform: translate3d(0, 7px, 0);   /* Rebote */
+  }
+  92% {
+    transform: translate3d(0, -2.5px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Palabra "Despega" con pop elástico al llegar a la cima */
+.typographic-banner-highlight {
+  color: #0000FF; /* Azul banco Astro Bank */
+  position: relative;
+  display: inline-block;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.typographic-banner-section.visible .typographic-banner-highlight {
+  animation: despegaPop 0.85s ease-in-out 0.12s forwards;
+}
+
+@keyframes despegaPop {
+  0% {
+    transform: scale(0.92);
+  }
+  55% {
+    transform: scale(1.08);
+  }
+  78% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.typographic-banner-highlight:hover {
+  transform: translateY(-4px) scale(1.06);
+}
+
+/* ========================================================
+   ESTRELLAS FLOTANTES (Salto elástico coordinado)
+   ======================================================== */
+.floating-star-wrapper {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(0, 80px, 0) scale(0.3);
+  will-change: transform, opacity;
+}
+
+/* Estrella Superior Izquierda */
+.star-top-left {
+  top: 18%;
+  left: 10%;
+  width: 68px;
+  height: 68px;
+}
+
+/* Estrella Inferior Derecha */
+.star-bottom-right {
+  bottom: 18%;
+  right: 10%;
+  width: 76px;
+  height: 76px;
+}
+
+/* Estrella decorativa pequeña complementaria */
+.star-accent {
+  top: 26%;
+  right: 22%;
+  width: 32px;
+  height: 32px;
+}
+
+/* Al ser visible la sección: saltan con rebote */
+.typographic-banner-section.visible .star-top-left {
+  animation: starJumpLeft 0.82s ease-in-out 0.05s forwards;
+}
+
+.typographic-banner-section.visible .star-bottom-right {
+  animation: starJumpRight 0.88s ease-in-out 0.12s forwards;
+}
+
+.typographic-banner-section.visible .star-accent {
+  animation: starJumpAccent 0.78s ease-in-out 0.18s forwards;
+}
+
+@keyframes starJumpLeft {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 85px, 0) scale(0.3) rotate(-25deg);
+  }
+  30% {
+    opacity: 1;
+  }
+  55% {
+    transform: translate3d(0, -18px, 0) scale(1.18) rotate(10deg);
+  }
+  78% {
+    transform: translate3d(0, 5px, 0) scale(0.98) rotate(-3deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes starJumpRight {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 105px, 0) scale(0.3) rotate(30deg);
+  }
+  30% {
+    opacity: 1;
+  }
+  55% {
+    transform: translate3d(0, -22px, 0) scale(1.2) rotate(-12deg);
+  }
+  78% {
+    transform: translate3d(0, 6px, 0) scale(0.97) rotate(3deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes starJumpAccent {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 70px, 0) scale(0.25) rotate(-35deg);
+  }
+  30% {
+    opacity: 0.8;
+  }
+  55% {
+    transform: translate3d(0, -14px, 0) scale(1.25) rotate(15deg);
+  }
+  78% {
+    transform: translate3d(0, 4px, 0) scale(0.98);
+  }
+  100% {
+    opacity: 0.75;
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+}
+
+/* Animaciones de flotación continua 100% fluidas en el SVG interno */
+.star-top-left .star-icon-anim {
+  width: 100%;
+  height: 100%;
+  display: block;
+  animation: floatTopLeft 6s ease-in-out infinite 0.85s,
+             starGlow 4s ease-in-out infinite 0.85s;
+  will-change: transform;
+}
+
+.star-bottom-right .star-icon-anim {
+  width: 100%;
+  height: 100%;
+  display: block;
+  animation: floatBottomRight 6.5s ease-in-out infinite 0.9s,
+             starGlow 4s ease-in-out infinite 1.5s;
+  will-change: transform;
+}
+
+.star-accent .star-icon-anim {
+  width: 100%;
+  height: 100%;
+  display: block;
+  animation: floatAccent 5s ease-in-out infinite 0.8s,
+             starGlow 3s ease-in-out infinite 0.8s;
+  will-change: transform;
+}
+
+/* Animaciones continuas de física flotante en GPU */
+@keyframes floatTopLeft {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -16px, 0) rotate(6deg);
+  }
+}
+
+@keyframes floatBottomRight {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, 18px, 0) rotate(-8deg);
+  }
+}
+
+@keyframes floatAccent {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0) rotate(12deg);
+  }
+}
+
+/* Resplandor y brillo pulsante suave */
+@keyframes starGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(0, 0, 255, 0.25));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(0, 0, 255, 0.55));
+  }
+}
+
+/* Adaptación responsive */
+@media (max-width: 900px) {
+  .star-top-left {
+    left: 4%;
+    top: 12%;
+    width: 52px;
+    height: 52px;
+  }
+
+  .star-bottom-right {
+    right: 4%;
+    bottom: 12%;
+    width: 58px;
+    height: 58px;
+  }
+
+  .star-accent {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .typographic-banner-section {
+    padding: 72px 18px;
+  }
+
+  .typographic-banner-title {
+    font-size: 34px;
+    letter-spacing: -0.8px;
+  }
+
+  .star-top-left {
+    width: 42px;
+    height: 42px;
+    top: 8%;
+    left: 6%;
+  }
+
+  .star-bottom-right {
+    width: 46px;
+    height: 46px;
+    bottom: 8%;
+    right: 6%;
+  }
+}

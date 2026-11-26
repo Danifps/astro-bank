@@ -1,0 +1,11 @@
+{
+  "codigo_pago": "PAG-2026-0001",
+  "cedula": "19876543",
+  "codigo_credito": "CRE-2026-0001",
+  "cuota_pagada": 1,
+  "monto_pagado": 250.00,
+  "moneda": "USD",
+  "metodo_pago": "transferencia",
+  "comprobante": "comprobantes/pag_0001.pdf",
+  "fecha_pago": { "$date": "2026-11-18T21:15:00Z" }
+}
