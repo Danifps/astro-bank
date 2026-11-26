@@ -1,0 +1,6 @@
+{
+  "username": "cmendoza90",
+  "password": "$2b$10$hashFicticioSeguro123",
+  "rol": "cliente",
+  "fecha_registro": { "$date": "2026-11-18T21:00:00Z" }
+}
