@@ -3,11 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout';
 import '../styles/Register.css';
 
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [errorMessage, setErrorMessage] = useState('');
   const [successModal, setSuccessModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Único estado JSON con todos los datos del formulario bancario
   const [formData, setFormData] = useState({
@@ -15,7 +19,7 @@ export default function RegisterPage() {
     tipoDocumento: 'V',
     numeroDocumento: '',
     nombresApellidos: '',
-
+    
     // Paso 2: Datos personales
     fechaNacimiento: '',
     genero: '', // 'Hombre' | 'Mujer'
@@ -114,20 +118,77 @@ export default function RegisterPage() {
     return true;
   };
 
-  const handleNext = (e) => {
+  const postJson = async (endpoint, payload, fallbackError) => {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.mensaje || fallbackError);
+    }
+
+    return data;
+  };
+
+  const handleNext = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!validateCurrentStep()) return;
 
     if (step < 4) {
       setStep((prev) => prev + 1);
-    } else {
-      // Finalización del registro: objeto JSON listo para backend
-      console.log('Objeto JSON completo para el backend de Astro Bank:', JSON.stringify(formData, null, 2));
+      return;
+    }
+
+    const documentoCompleto = `${formData.tipoDocumento}-${formData.numeroDocumento.trim()}`;
+
+    const usuarioPayload = {
+      username: documentoCompleto,
+      password: formData.contrasena,
+      rol: 'cliente'
+    };
+
+    const perfilPayload = {
+      tipo_documento: formData.tipoDocumento,
+      cedula: formData.numeroDocumento.trim(),
+      nombre_completo: formData.nombresApellidos.trim(),
+      genero: formData.genero,
+      direccion: 'No especificada',
+      operadora_telefono: formData.operadora,
+      numero_telefono: formData.numeroTelefono.trim(),
+      correo_electronico: formData.correoElectronico.trim(),
+      imagen_documento: 'pendiente',
+      tipo_usuario: 'cliente',
+      datos_laborales: {
+        empresa: 'No especificada',
+        cargo: formData.ocupacion.trim(),
+        ingresos_mensuales: 0
+      }
+    };
+
+    setIsSubmitting(true);
+    setErrorMessage('');
+
+    try {
+      await postJson('/usuarios', usuarioPayload, 'No se pudo registrar el usuario.');
+      await postJson('/perfil', perfilPayload, 'No se pudo registrar el perfil.');
       setSuccessModal(true);
+    } catch (error) {
+      setErrorMessage(
+        error.message === 'Failed to fetch'
+          ? 'No se pudo conectar con el servidor. Verifica que el backend esté activo.'
+          : error.message
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleBack = () => {
+    if (isSubmitting) return;
     if (step === 1) {
       navigate('/login');
     } else {
@@ -384,14 +445,16 @@ export default function RegisterPage() {
               type="button"
               className="bank-btn bank-btn-secondary"
               onClick={handleBack}
+              disabled={isSubmitting}
             >
               Regresar
             </button>
             <button
               type="submit"
               className="bank-btn bank-btn-primary"
+              disabled={isSubmitting}
             >
-              {step === 4 ? 'Siguiente' : 'Siguiente'}
+              {isSubmitting ? 'Enviando...' : 'Siguiente'}
             </button>
           </div>
         </form>
