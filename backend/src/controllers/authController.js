@@ -28,15 +28,17 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
  */
 export const login = async (req, res) => {
   try {
+    const { usuarioOCedula, claveAcceso } = req.body || {};
+    console.log(`📡 [AUTH ATTEMPT] Intento de login recibido: "${usuarioOCedula}"`);
+
     // 1. Verificar si la base de datos MongoDB está conectada
     if (mongoose.connection.readyState !== 1) {
+      console.warn('⚠️ [AUTH ERROR] MongoDB no está conectado');
       return res.status(503).json({
         ok: false,
         mensaje: 'Error de conexión: El servidor no tiene acceso activo a la base de datos MongoDB. Verifica el MONGODB_URI en tu archivo backend/.env.'
       });
     }
-
-    const { usuarioOCedula, claveAcceso } = req.body || {};
 
     if (
       typeof usuarioOCedula !== 'string' ||
@@ -44,6 +46,7 @@ export const login = async (req, res) => {
       !usuarioOCedula.trim() ||
       !claveAcceso
     ) {
+      console.warn('⚠️ [AUTH REJECTED] Faltan campos obligatorios');
       return res.status(400).json({
         ok: false,
         mensaje: 'Por favor ingresa tu usuario o cédula y tu clave de acceso.'
@@ -104,6 +107,7 @@ export const login = async (req, res) => {
         });
       }
 
+      console.warn(`❌ [AUTH DENIED] Usuario no encontrado: "${inputClean}"`);
       return res.status(401).json({
         ok: false,
         intentosRestantes: attemptInfo.attemptsLeft,
@@ -143,6 +147,7 @@ export const login = async (req, res) => {
         });
       }
 
+      console.warn(`❌ [AUTH DENIED] Clave incorrecta para usuario: "${userFound.usuario}"`);
       return res.status(401).json({
         ok: false,
         intentosRestantes: attemptInfo.attemptsLeft,
@@ -163,7 +168,9 @@ export const login = async (req, res) => {
       nombre: nombreCompleto,
       cedula: cedula,
       perfil: userFound.rol === 'inversionista' ? 'Inversionista' : 'Personas',
-      correo: perfilFound?.correo_electronico || `${userFound.usuario}@astrobank.com`
+      correo: perfilFound?.correo_electronico || `${userFound.usuario}@astrobank.com`,
+      telefono: perfilFound?.telefono || perfilFound?.numero_telefono || '+58-4123807072',
+      fechaNacimiento: perfilFound?.fecha_nacimiento || '15/12/2005'
     };
 
     const session = createSessionToken({
@@ -171,6 +178,7 @@ export const login = async (req, res) => {
       rol: usuarioRespuesta.rol
     }, getClientIp(req));
 
+    console.log(`✅ [AUTH SUCCESS] Usuario autenticado con éxito: "${userFound.usuario}" (${nombreCompleto})`);
     return res.status(200).json({
       ok: true,
       mensaje: 'Autenticación exitosa en Astro Bank.',
@@ -269,8 +277,26 @@ export const register = async (req, res) => {
     if (existingCedula) {
       return res.status(400).json({
         ok: false,
-        mensaje: 'La cédula de identidad ingresada ya se encuentra registrada.'
+        mensaje: 'La cédula de identidad ingresada ya se encuentra registrada en Astro Bank.'
       });
+    }
+
+    const existingUserCedula = await Usuario.findOne({ cedula: cleanCedula });
+    if (existingUserCedula) {
+      return res.status(400).json({
+        ok: false,
+        mensaje: 'La cédula de identidad ingresada ya se encuentra registrada en Astro Bank.'
+      });
+    }
+
+    if (perfil.correo_electronico) {
+      const existingEmail = await Perfil.findOne({ correo_electronico: perfil.correo_electronico.trim().toLowerCase() });
+      if (existingEmail) {
+        return res.status(400).json({
+          ok: false,
+          mensaje: 'El correo electrónico ingresado ya está asociado a otra cuenta.'
+        });
+      }
     }
 
     // Hashear contraseña con bcrypt

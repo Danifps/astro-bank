@@ -16,7 +16,17 @@ import {
   Clock,
   Check,
   FileText,
-  PanelLeft
+  PanelLeft,
+  Upload,
+  FileCheck,
+  AlertCircle,
+  Sun,
+  Moon,
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  ArrowLeft
 } from 'lucide-react';
 import logotipoImg from '../assets/logotipo.png';
 import logoPhotoroomImg from '../assets/logo-Photoroom.png';
@@ -60,7 +70,7 @@ function CreditSparkline({ tab = 'general' }) {
   const bottomPad = 10;
 
   const points = values.map((v, i) => {
-    const x = 18 + (i / (values.length - 1)) * (w - 36);
+    const x = 16 + (i / (values.length - 1)) * (w - 32);
     const y = topPad + (1 - (v - min) / (max - min)) * (h - topPad - bottomPad);
     return {
       x,
@@ -112,9 +122,9 @@ function CreditSparkline({ tab = 'general' }) {
             </linearGradient>
           </defs>
 
-          {/* Líneas guía punteadas horizontales */}
-          <line x1="10" y1={h * 0.30} x2={w - 10} y2={h * 0.30} stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-          <line x1="10" y1={h * 0.66} x2={w - 10} y2={h * 0.66} stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+          {/* Líneas guía punteadas horizontales de borde a borde */}
+          <line x1="0" y1={h * 0.30} x2={w} y2={h * 0.30} stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+          <line x1="0" y1={h * 0.66} x2={w} y2={h * 0.66} stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" vectorEffect="non-scaling-stroke" />
 
           {/* Área sombreada con gradiente */}
           <path d={areaD} fill={`url(#sparklineGrad-${tab})`} />
@@ -410,16 +420,56 @@ export default function DashboardPage() {
     return name.charAt(0).toUpperCase();
   };
 
+  // Estado para el modal de Mi información (perfil del usuario)
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+
+  // Tema claro / oscuro con persistencia en localStorage y data-theme en html
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem('astro_theme') || 'light';
+    } catch {
+      return 'light';
+    }
+  });
+
+  useEffect(() => {
+    try {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('astro_theme', theme);
+    } catch {
+      // ignore
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  };
+
   // Estados de solicitudes de crédito
   const [creditList, setCreditList] = useState(INITIAL_CREDIT_REQUESTS);
   const [solicitarModalOpen, setSolicitarModalOpen] = useState(false);
   const [solicitarSuccess, setSolicitarSuccess] = useState(false);
-  const [newCreditData, setNewCreditData] = useState({
-    tipo: 'Financiamiento',
-    monto: '50000',
-    plazo: '12',
-    destino: 'Inversión personal / remodelación'
-  });
+  
+  // Tipo de crédito dinámico: 'Financiamiento' | 'Producto' (General no se solicita según alineamiento)
+  const [solTipoCredito, setSolTipoCredito] = useState('Financiamiento');
+
+  // Datos específicos para Financiamiento (montos grandes, 12 meses, motivo y doc legal)
+  const [finMonto, setFinMonto] = useState('80000');
+  const [finMotivo, setFinMotivo] = useState('Inversión personal / remodelación');
+  const [finOtroMotivo, setFinOtroMotivo] = useState('');
+  const [finDocFile, setFinDocFile] = useState(null);
+  const [finDocName, setFinDocName] = useState('');
+
+  // Datos específicos para Línea de Productos (categoría, otro, inicial mín. 40%, plazo 3/4/6 meses, foto)
+  const [prodCategoria, setProdCategoria] = useState('Tecnología y Smartphones');
+  const [prodOtroTipo, setProdOtroTipo] = useState('');
+  const [prodPrecioTotal, setProdPrecioTotal] = useState('35000');
+  const [prodCuotaInicial, setProdCuotaInicial] = useState('14000'); // 40% inicial de 35000
+  const [prodPlazo, setProdPlazo] = useState('6'); // '3' | '4' | '6'
+  const [prodFotoFile, setProdFotoFile] = useState(null);
+  const [prodFotoPreview, setProdFotoPreview] = useState(null);
+  const [prodFotoName, setProdFotoName] = useState('');
+  const [prodError, setProdError] = useState('');
 
   // Estados de pago y detalle
   const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -547,35 +597,156 @@ export default function DashboardPage() {
     setPaymentSuccess(true);
   };
 
+  // Handlers para el formulario dinámico de Solicitar Crédito
+  const handlePrecioTotalChange = (val) => {
+    setProdPrecioTotal(val);
+    const num = Number(val) || 0;
+    const min40 = Math.round(num * 0.40);
+    setProdCuotaInicial(min40 > 0 ? min40.toString() : '');
+    setProdError('');
+  };
+
+  const handleCuotaInicialChange = (val) => {
+    setProdCuotaInicial(val);
+    const total = Number(prodPrecioTotal) || 0;
+    const inicial = Number(val) || 0;
+    const minRequired = total * 0.40;
+    if (total > 0 && inicial < minRequired) {
+      setProdError(`La cuota inicial mínima requerida es del 40% (Bs ${minRequired.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`);
+    } else {
+      setProdError('');
+    }
+  };
+
+  const handleFinDocChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFinDocFile(file);
+      setFinDocName(file.name);
+    }
+  };
+
+  const handleRemoveFinDoc = () => {
+    setFinDocFile(null);
+    setFinDocName('');
+  };
+
+  const handleProdFotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProdFotoFile(file);
+      setProdFotoName(file.name);
+      const reader = new FileReader();
+      reader.onloadend = () => setProdFotoPreview(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveProdFoto = () => {
+    setProdFotoFile(null);
+    setProdFotoPreview(null);
+    setProdFotoName('');
+  };
+
+  const handleCloseSolicitarModal = () => {
+    setSolicitarModalOpen(false);
+    setSolicitarSuccess(false);
+    setProdError('');
+  };
+
   const handleSolicitarSubmit = (e) => {
     e.preventDefault();
-    const newSolicitudId = Math.floor(10000000000 + Math.random() * 90000000000).toString();
-    const today = new Date().toLocaleDateString('es-VE');
-    const formattedMonto = Number(newCreditData.monto).toLocaleString('es-VE', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
 
-    const newRequest = {
-      id: Date.now(),
-      solicitudId: newSolicitudId,
-      fechaCorte: '05/12/2026',
-      fechaSolicitado: today,
-      tipo: newCreditData.tipo,
-      montoPagar: `Bs ${formattedMonto}`,
-      cuotas: `0/${newCreditData.plazo}`,
-      estado: 'ENVIADO',
-      tasa: newCreditData.tipo === 'Línea General' ? '16.5% anual' : '14.0% fija',
-      limiteTotal: `Bs ${formattedMonto}`,
-      descripcion: newCreditData.destino || 'Solicitud de crédito ingresada a través de la banca web.'
-    };
+    if (solTipoCredito === 'Financiamiento') {
+      const montoNum = Number(finMonto) || 0;
+      if (montoNum <= 0) {
+        alert('Por favor ingresa un monto válido a financiar.');
+        return;
+      }
+      const motivoFinal = finMotivo === 'Otro' ? finOtroMotivo.trim() : finMotivo;
+      if (!motivoFinal) {
+        alert('Por favor especifica el motivo de tu solicitud de crédito.');
+        return;
+      }
 
-    setCreditList([newRequest, ...creditList]);
-    setSolicitarSuccess(true);
-    setTimeout(() => {
-      setSolicitarSuccess(false);
-      setSolicitarModalOpen(false);
-    }, 1800);
+      const cuotaCorte = montoNum / 12;
+      const formattedCuota = cuotaCorte.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const formattedMonto = montoNum.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const newSolicitudId = Math.floor(10000000000 + Math.random() * 90000000000).toString();
+      const today = new Date().toLocaleDateString('es-VE');
+
+      const newRequest = {
+        id: Date.now(),
+        solicitudId: newSolicitudId,
+        fechaCorte: '05/12/2026',
+        fechaSolicitado: today,
+        tipo: 'Financiamiento',
+        montoPagar: `Bs ${formattedCuota}`,
+        cuotas: '0/12',
+        estado: 'ENVIADO',
+        tasa: '14.0% fija anual',
+        limiteTotal: `Bs ${formattedMonto}`,
+        descripcion: `Financiamiento 12 meses • Motivo: ${motivoFinal}${finDocName ? ` • Doc Legal: ${finDocName}` : ''}`
+      };
+
+      setCreditList([newRequest, ...creditList]);
+      setSolicitarSuccess(true);
+      setTimeout(() => {
+        setSolicitarSuccess(false);
+        setSolicitarModalOpen(false);
+      }, 1800);
+    } else {
+      // Línea de Productos
+      const totalNum = Number(prodPrecioTotal) || 0;
+      const inicialNum = Number(prodCuotaInicial) || 0;
+      const min40 = totalNum * 0.40;
+
+      if (totalNum <= 0) {
+        setProdError('Por favor ingresa el precio total del producto.');
+        return;
+      }
+
+      if (inicialNum < min40) {
+        setProdError(`La cuota inicial debe ser de al menos el 40% (Bs ${min40.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`);
+        return;
+      }
+
+      const prodName = prodCategoria === 'Otro' ? prodOtroTipo.trim() : prodCategoria;
+      if (!prodName) {
+        setProdError('Por favor especifica qué tipo de producto es.');
+        return;
+      }
+
+      const plazoMeses = Number(prodPlazo) || 6;
+      const financiado = totalNum - inicialNum;
+      const cuotaCorte = financiado / plazoMeses;
+      const formattedCuota = cuotaCorte.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const formattedFinanciado = financiado.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const formattedInicial = inicialNum.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const newSolicitudId = Math.floor(10000000000 + Math.random() * 90000000000).toString();
+      const today = new Date().toLocaleDateString('es-VE');
+
+      const newRequest = {
+        id: Date.now(),
+        solicitudId: newSolicitudId,
+        fechaCorte: '05/12/2026',
+        fechaSolicitado: today,
+        tipo: 'Producto',
+        montoPagar: `Bs ${formattedCuota}`,
+        cuotas: `0/${plazoMeses}`,
+        estado: 'ENVIADO',
+        tasa: '12.5% fija',
+        limiteTotal: `Bs ${formattedFinanciado}`,
+        descripcion: `Producto: ${prodName} • Inicial: Bs ${formattedInicial} (40% mín.) • Plazo: ${plazoMeses} meses${prodFotoName ? ` • Foto: ${prodFotoName}` : ''}`
+      };
+
+      setCreditList([newRequest, ...creditList]);
+      setSolicitarSuccess(true);
+      setTimeout(() => {
+        setSolicitarSuccess(false);
+        setSolicitarModalOpen(false);
+      }, 1800);
+    }
   };
 
   const handleLimpiarCampos = () => {
@@ -669,7 +840,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="dashboard-layout">
+    <div className={`dashboard-layout ${theme === 'dark' ? 'dark-theme' : ''}`}>
       {/* ===================================================
           1. SIDEBAR LATERAL IZQUIERDO
          =================================================== */}
@@ -796,12 +967,12 @@ export default function DashboardPage() {
             <div className={`dashboard-sidebar-user-card ${sidebarCollapsed ? 'collapsed' : ''}`}>
               <button
                 type="button"
-                className={`dashboard-user-profile-trigger ${activeNav === 'perfil' ? 'active' : ''}`}
+                className={`dashboard-user-profile-trigger ${profileModalOpen ? 'active' : ''}`}
                 onClick={() => {
-                  setActiveNav('perfil');
+                  setProfileModalOpen(true);
                   setMobileSidebarOpen(false);
                 }}
-                title={`Mi Perfil (${getUserDisplayName()})`}
+                title={`Mi Información (${getUserDisplayName()})`}
               >
                 <div className="dashboard-user-avatar-bubble">
                   {getUserInitial()}
@@ -869,14 +1040,23 @@ export default function DashboardPage() {
                 ? 'Transacción'
                 : activeNav === 'historial'
                 ? 'Historial de Movimientos'
-                : activeNav === 'perfil'
-                ? 'Mi Perfil'
                 : `${getTimeGreeting()}, ${getUserDisplayName()}`}
             </h1>
           </div>
 
           <div className="dashboard-header-right">
-            {/* Campana de Notificaciones (Único elemento en la barra superior según solicitud) */}
+            {/* Botón para cambiar tema a Claro / Oscuro */}
+            <button
+              type="button"
+              className="dashboard-theme-toggle-btn"
+              onClick={toggleTheme}
+              title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+              aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            >
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+
+            {/* Campana de Notificaciones */}
             <button
               type="button"
               className="dashboard-notif-btn"
@@ -1548,32 +1728,14 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
-                        {/* Columna Derecha: Astro Bank Star & Branding */}
+                        {/* Columna Derecha: Logotipo Oficial Real de Astro Bank */}
                         <div className="transaccion-brand-col">
                           <div className="transaccion-brand-watermark">
-                            <span className="transaccion-brand-title">Astro Bank</span>
-                            <svg
-                              className="transaccion-brand-star-svg"
-                              viewBox="0 0 100 100"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M50 4 L57 39 L92 50 L57 61 L50 96 L43 61 L8 50 L43 39 Z"
-                                stroke="#0000FF"
-                                strokeWidth="3.5"
-                                strokeLinejoin="round"
-                                fill="none"
-                              />
-                              <path
-                                d="M50 20 L54 44 L78 50 L54 56 L50 80 L46 56 L22 50 L46 44 Z"
-                                stroke="#0000FF"
-                                strokeWidth="2.5"
-                                strokeLinejoin="round"
-                                fill="rgba(0, 0, 255, 0.08)"
-                              />
-                              <circle cx="50" cy="50" r="3.5" fill="#0000FF" />
-                            </svg>
+                            <img
+                              src={logotipoImg}
+                              alt="Astro Bank"
+                              className="transaccion-brand-img"
+                            />
                           </div>
                         </div>
                       </div>
@@ -1959,17 +2121,22 @@ export default function DashboardPage() {
       )}
 
       {/* ===================================================
-          MODAL: SOLICITAR NUEVO CRÉDITO
+          MODAL: SOLICITAR NUEVO CRÉDITO DINÁMICO
          =================================================== */}
       {solicitarModalOpen && (
         <div className="dashboard-modal-overlay">
-          <div className="dashboard-modal-card">
+          <div className="dashboard-modal-card credit-solicitar-modal-card">
             <div className="dashboard-modal-header">
-              <h3 className="dashboard-modal-title">Solicitar Crédito</h3>
+              <div>
+                <h3 className="dashboard-modal-title">Solicitar Crédito</h3>
+                <p style={{ fontSize: 13, color: '#64748B', margin: '3px 0 0' }}>
+                  Elige el tipo de crédito y completa los recaudos requeridos
+                </p>
+              </div>
               <button
                 type="button"
                 className="dashboard-modal-close"
-                onClick={() => setSolicitarModalOpen(false)}
+                onClick={handleCloseSolicitarModal}
                 aria-label="Cerrar"
               >
                 <X size={20} />
@@ -2001,76 +2168,368 @@ export default function DashboardPage() {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSolicitarSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <form onSubmit={handleSolicitarSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div>
-                  <label className="bank-label" htmlFor="solTipo" style={{ marginBottom: 6, display: 'block' }}>
+                  <label className="bank-label" htmlFor="solTipoCredito" style={{ marginBottom: 6, display: 'block' }}>
                     Tipo de Crédito
                   </label>
                   <select
-                    id="solTipo"
+                    id="solTipoCredito"
                     className="bank-select"
-                    value={newCreditData.tipo}
-                    onChange={(e) => setNewCreditData({ ...newCreditData, tipo: e.target.value })}
+                    value={solTipoCredito}
+                    onChange={(e) => {
+                      setSolTipoCredito(e.target.value);
+                      setProdError('');
+                    }}
                   >
-                    <option value="Financiamiento">Financiamiento Personal</option>
-                    <option value="Línea General">Línea General Rotativa</option>
-                    <option value="Producto">Crédito de Producto Comercial</option>
+                    <option value="Financiamiento">Línea de Financiamiento (Montos mayores - 12 meses)</option>
+                    <option value="Producto">Línea de Productos (Inicial mín. 40% - 3, 4 o 6 meses)</option>
                   </select>
                 </div>
 
-                <div>
-                  <label className="bank-label" htmlFor="solMonto" style={{ marginBottom: 6, display: 'block' }}>
-                    Monto a Solicitar (Bs)
-                  </label>
-                  <input
-                    type="number"
-                    id="solMonto"
-                    placeholder="Ej: 50000"
-                    min="1000"
-                    step="500"
-                    required
-                    value={newCreditData.monto}
-                    onChange={(e) => setNewCreditData({ ...newCreditData, monto: e.target.value })}
-                    className="bank-input"
-                  />
-                </div>
+                {/* =========================================
+                    TIPO 1: FINANCIAMIENTO PERSONAL
+                   ========================================= */}
+                {solTipoCredito === 'Financiamiento' && (
+                  <>
+                    <div>
+                      <label className="bank-label" htmlFor="finMonto" style={{ marginBottom: 6, display: 'block' }}>
+                        Monto a Solicitar (Bs)
+                      </label>
+                      <input
+                        type="number"
+                        id="finMonto"
+                        placeholder="Ej: 80000"
+                        min="5000"
+                        step="1000"
+                        required
+                        value={finMonto}
+                        onChange={(e) => setFinMonto(e.target.value)}
+                        className="bank-input"
+                      />
+                      <span className="credit-field-hint">
+                        Diseñado para financiamientos de mayor escala y proyectos personales.
+                      </span>
+                    </div>
 
-                <div>
-                  <label className="bank-label" htmlFor="solPlazo" style={{ marginBottom: 6, display: 'block' }}>
-                    Plazo en Cuotas
-                  </label>
-                  <select
-                    id="solPlazo"
-                    className="bank-select"
-                    value={newCreditData.plazo}
-                    onChange={(e) => setNewCreditData({ ...newCreditData, plazo: e.target.value })}
-                  >
-                    <option value="6">6 Cuotas (6 meses)</option>
-                    <option value="12">12 Cuotas (1 año)</option>
-                    <option value="18">18 Cuotas (1 año y medio)</option>
-                    <option value="24">24 Cuotas (2 años)</option>
-                  </select>
-                </div>
+                    <div>
+                      <label className="bank-label" style={{ marginBottom: 6, display: 'block' }}>
+                        Plazo en Cuotas
+                      </label>
+                      <input
+                        type="text"
+                        className="bank-input"
+                        value="12 Cuotas mensuales (12 meses fijos)"
+                        disabled
+                        style={{ backgroundColor: '#F8FAFC', color: '#334155', fontWeight: 600, cursor: 'not-allowed' }}
+                      />
+                    </div>
 
-                <div>
-                  <label className="bank-label" htmlFor="solDestino" style={{ marginBottom: 6, display: 'block' }}>
-                    Destino o Finalidad del Crédito
-                  </label>
-                  <input
-                    type="text"
-                    id="solDestino"
-                    placeholder="Ej: Inversión personal, adquisición de bienes..."
-                    required
-                    value={newCreditData.destino}
-                    onChange={(e) => setNewCreditData({ ...newCreditData, destino: e.target.value })}
-                    className="bank-input"
-                  />
-                </div>
+                    <div>
+                      <label className="bank-label" htmlFor="finMotivo" style={{ marginBottom: 6, display: 'block' }}>
+                        Motivo / Destino del Crédito
+                      </label>
+                      <select
+                        id="finMotivo"
+                        className="bank-select"
+                        value={finMotivo}
+                        onChange={(e) => setFinMotivo(e.target.value)}
+                      >
+                        <option value="Inversión personal / remodelación">Inversión personal / remodelación del hogar</option>
+                        <option value="Capital de trabajo / negocio">Capital de trabajo / emprendimiento</option>
+                        <option value="Consolidación de compromisos">Consolidación de compromisos y deudas</option>
+                        <option value="Educación o capacitación">Educación / estudios superiores</option>
+                        <option value="Gastos médicos e imprevistos">Gastos médicos o salud familiar</option>
+                        <option value="Otro">Otro (especificar)</option>
+                      </select>
+                    </div>
+
+                    {finMotivo === 'Otro' && (
+                      <div>
+                        <label className="bank-label" htmlFor="finOtroMotivo" style={{ marginBottom: 6, display: 'block' }}>
+                          Especificar motivo del préstamo
+                        </label>
+                        <input
+                          type="text"
+                          id="finOtroMotivo"
+                          placeholder="Describe detalladamente el destino del financiamiento"
+                          required
+                          value={finOtroMotivo}
+                          onChange={(e) => setFinOtroMotivo(e.target.value)}
+                          className="bank-input"
+                        />
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="bank-label" style={{ marginBottom: 6, display: 'block' }}>
+                        Documento Legal Referente al Préstamo (Opcional)
+                      </label>
+                      {finDocFile ? (
+                        <div className="credit-file-badge-row">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
+                            <FileCheck size={20} color="#0000FF" />
+                            <span className="credit-file-name" title={finDocName}>{finDocName}</span>
+                          </div>
+                          <button
+                            type="button"
+                            className="credit-file-remove-btn"
+                            onClick={handleRemoveFinDoc}
+                            title="Eliminar documento"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="credit-file-upload-box">
+                          <input
+                            type="file"
+                            accept=".pdf,image/png,image/jpeg"
+                            onChange={handleFinDocChange}
+                            style={{ display: 'none' }}
+                          />
+                          <Upload size={22} color="#0000FF" />
+                          <div style={{ textAlign: 'center' }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: '#0000FF', display: 'block' }}>
+                              Adjuntar documento o aval legal
+                            </span>
+                            <span style={{ fontSize: 11, color: '#94A3B8' }}>PDF, PNG o JPG (Máx. 10MB)</span>
+                          </div>
+                        </label>
+                      )}
+                    </div>
+
+                    {/* Proyección de cálculo proporcional Financiamiento */}
+                    <div className="credit-calc-summary-card">
+                      <div className="credit-calc-summary-header">
+                        <span className="credit-calc-title">Proyección de Pago en Fecha de Corte</span>
+                        <span className="credit-calc-badge">12 Meses</span>
+                      </div>
+                      <div className="credit-calc-summary-grid">
+                        <div className="credit-calc-item">
+                          <span className="credit-calc-lbl">Monto Financiado</span>
+                          <span className="credit-calc-val">
+                            Bs {(Number(finMonto) || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                        <div className="credit-calc-item">
+                          <span className="credit-calc-lbl">Próxima Fecha de Corte</span>
+                          <span className="credit-calc-val">05/12/2026</span>
+                        </div>
+                        <div className="credit-calc-item" style={{ gridColumn: 'span 2' }}>
+                          <span className="credit-calc-lbl">Monto proporcional a pagar por corte (Cuota mensual)</span>
+                          <span className="credit-calc-val-highlight">
+                            Bs {((Number(finMonto) || 0) / 12).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* =========================================
+                    TIPO 2: LÍNEA DE PRODUCTOS
+                   ========================================= */}
+                {solTipoCredito === 'Producto' && (
+                  <>
+                    <div>
+                      <label className="bank-label" htmlFor="prodCategoria" style={{ marginBottom: 6, display: 'block' }}>
+                        Tipo o Categoría de Producto
+                      </label>
+                      <select
+                        id="prodCategoria"
+                        className="bank-select"
+                        value={prodCategoria}
+                        onChange={(e) => setProdCategoria(e.target.value)}
+                      >
+                        <option value="Tecnología y Smartphones">Tecnología y Smartphones</option>
+                        <option value="Electrodomésticos y Línea Blanca">Electrodomésticos y Línea Blanca</option>
+                        <option value="Computación y Laptops">Computación y Laptops</option>
+                        <option value="Motos y Repuestos">Motos y Repuestos</option>
+                        <option value="Mobiliario y Hogar">Mobiliario y Hogar</option>
+                        <option value="Herramientas y Equipos">Herramientas y Equipos</option>
+                        <option value="Otro">Otro (especificar)</option>
+                      </select>
+                    </div>
+
+                    {prodCategoria === 'Otro' && (
+                      <div>
+                        <label className="bank-label" htmlFor="prodOtroTipo" style={{ marginBottom: 6, display: 'block' }}>
+                          Especificar tipo de producto
+                        </label>
+                        <input
+                          type="text"
+                          id="prodOtroTipo"
+                          placeholder="Ej: Instrumento musical, equipo médico..."
+                          required
+                          value={prodOtroTipo}
+                          onChange={(e) => setProdOtroTipo(e.target.value)}
+                          className="bank-input"
+                        />
+                      </div>
+                    )}
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      <div>
+                        <label className="bank-label" htmlFor="prodPrecioTotal" style={{ marginBottom: 6, display: 'block' }}>
+                          Precio Total (Bs)
+                        </label>
+                        <input
+                          type="number"
+                          id="prodPrecioTotal"
+                          placeholder="Ej: 35000"
+                          min="100"
+                          step="100"
+                          required
+                          value={prodPrecioTotal}
+                          onChange={(e) => handlePrecioTotalChange(e.target.value)}
+                          className="bank-input"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="bank-label" htmlFor="prodCuotaInicial" style={{ marginBottom: 6, display: 'block' }}>
+                          Cuota Inicial (Mín. 40%)
+                        </label>
+                        <input
+                          type="number"
+                          id="prodCuotaInicial"
+                          placeholder="Mín. 40%"
+                          min="0"
+                          step="100"
+                          required
+                          value={prodCuotaInicial}
+                          onChange={(e) => handleCuotaInicialChange(e.target.value)}
+                          className={`bank-input ${prodError ? 'bank-input-error' : ''}`}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: -8 }}>
+                      <span className="credit-field-hint">
+                        Cuota inicial mínima 40%: <strong>Bs {((Number(prodPrecioTotal) || 0) * 0.40).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                      </span>
+                      {prodError && (
+                        <div className="credit-field-error">
+                          <AlertCircle size={15} style={{ flexShrink: 0 }} />
+                          <span>{prodError}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="bank-label" style={{ marginBottom: 6, display: 'block' }}>
+                        Plazo a Elegir
+                      </label>
+                      <div className="credit-plazo-pills-row">
+                        {[
+                          { val: '3', label: '3 Meses (3 cuotas)' },
+                          { val: '4', label: '4 Meses (4 cuotas)' },
+                          { val: '6', label: '6 Meses (6 cuotas)' }
+                        ].map((opt) => (
+                          <button
+                            key={opt.val}
+                            type="button"
+                            className={`credit-plazo-pill ${prodPlazo === opt.val ? 'active' : ''}`}
+                            onClick={() => setProdPlazo(opt.val)}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="bank-label" style={{ marginBottom: 6, display: 'block' }}>
+                        Foto del Producto (Adjuntar imagen)
+                      </label>
+                      {prodFotoPreview ? (
+                        <div className="credit-file-badge-row">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden' }}>
+                            <img src={prodFotoPreview} alt="Producto" className="credit-file-thumbnail" />
+                            <span className="credit-file-name" title={prodFotoName}>{prodFotoName || 'Foto adjunta'}</span>
+                          </div>
+                          <button
+                            type="button"
+                            className="credit-file-remove-btn"
+                            onClick={handleRemoveProdFoto}
+                            title="Eliminar foto"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="credit-file-upload-box">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleProdFotoChange}
+                            style={{ display: 'none' }}
+                          />
+                          <Upload size={22} color="#0000FF" />
+                          <div style={{ textAlign: 'center' }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: '#0000FF', display: 'block' }}>
+                              Adjuntar foto del producto
+                            </span>
+                            <span style={{ fontSize: 11, color: '#94A3B8' }}>PNG, JPG o WEBP (Máx. 5MB)</span>
+                          </div>
+                        </label>
+                      )}
+                    </div>
+
+                    {/* Proyección de cálculo proporcional para Producto */}
+                    {(() => {
+                      const totalNum = Number(prodPrecioTotal) || 0;
+                      const inicialNum = Number(prodCuotaInicial) || 0;
+                      const financiadoNum = Math.max(0, totalNum - inicialNum);
+                      const plazoNum = Number(prodPlazo) || 6;
+                      const cuotaMensual = financiadoNum / plazoNum;
+                      return (
+                        <div className="credit-calc-summary-card">
+                          <div className="credit-calc-summary-header">
+                            <span className="credit-calc-title">Cálculo Proporcional a Pagar</span>
+                            <span className="credit-calc-badge">{prodPlazo} Meses</span>
+                          </div>
+                          <div className="credit-calc-summary-grid">
+                            <div className="credit-calc-item">
+                              <span className="credit-calc-lbl">Precio Total</span>
+                              <span className="credit-calc-val">
+                                Bs {totalNum.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
+                            </div>
+                            <div className="credit-calc-item">
+                              <span className="credit-calc-lbl">Inicial ({totalNum > 0 ? Math.round((inicialNum / totalNum) * 100) : 0}%)</span>
+                              <span className="credit-calc-val" style={{ color: '#16A34A' }}>
+                                Bs {inicialNum.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
+                            </div>
+                            <div className="credit-calc-item">
+                              <span className="credit-calc-lbl">Monto Financiado</span>
+                              <span className="credit-calc-val">
+                                Bs {financiadoNum.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
+                            </div>
+                            <div className="credit-calc-item">
+                              <span className="credit-calc-lbl">Próxima Fecha de Corte</span>
+                              <span className="credit-calc-val">05/12/2026</span>
+                            </div>
+                            <div className="credit-calc-item" style={{ gridColumn: 'span 2' }}>
+                              <span className="credit-calc-lbl">Monto a pagar en fecha de corte ({prodPlazo} cuotas proporcionales)</span>
+                              <span className="credit-calc-val-highlight">
+                                Bs {cuotaMensual.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </>
+                )}
 
                 <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
                   <button
                     type="button"
-                    onClick={() => setSolicitarModalOpen(false)}
+                    onClick={handleCloseSolicitarModal}
                     className="bank-btn bank-btn-secondary"
                     style={{ flex: 1 }}
                   >
@@ -2079,7 +2538,12 @@ export default function DashboardPage() {
                   <button
                     type="submit"
                     className="bank-btn bank-btn-primary"
-                    style={{ flex: 1.5 }}
+                    disabled={solTipoCredito === 'Producto' && (!!prodError || Number(prodCuotaInicial) < (Number(prodPrecioTotal) || 0) * 0.40)}
+                    style={{
+                      flex: 1.5,
+                      opacity: (solTipoCredito === 'Producto' && (!!prodError || Number(prodCuotaInicial) < (Number(prodPrecioTotal) || 0) * 0.40)) ? 0.6 : 1,
+                      cursor: (solTipoCredito === 'Producto' && (!!prodError || Number(prodCuotaInicial) < (Number(prodPrecioTotal) || 0) * 0.40)) ? 'not-allowed' : 'pointer'
+                    }}
                   >
                     Enviar Solicitud
                   </button>
@@ -2186,6 +2650,150 @@ export default function DashboardPage() {
                   Cerrar
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===================================================
+          MODAL: MI INFORMACIÓN (PERFIL DEL USUARIO)
+         =================================================== */}
+      {profileModalOpen && (
+        <div className="dashboard-modal-overlay">
+          <div className="dashboard-modal-card profile-info-modal-card">
+            <div className="profile-info-modal-header">
+              <button
+                type="button"
+                className="profile-info-modal-back-btn"
+                onClick={() => setProfileModalOpen(false)}
+                aria-label="Cerrar modal"
+                title="Volver"
+              >
+                <ArrowLeft size={22} />
+              </button>
+              <h3 className="profile-info-modal-title">Mi información</h3>
+              <button
+                type="button"
+                className="dashboard-modal-close"
+                onClick={() => setProfileModalOpen(false)}
+                aria-label="Cerrar modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Avatar central circular con icono de usuario */}
+            <div className="profile-info-avatar-wrap">
+              <div className="profile-info-avatar-circle">
+                <User size={46} strokeWidth={1.75} />
+              </div>
+            </div>
+
+            {/* Lista de campos según diseño exacto (Nombre, Cédula, Correo, Usuario, Teléfono, Fecha de Nacimiento) */}
+            <div className="profile-info-fields-list">
+              {/* 1. Nombre */}
+              <div className="profile-info-field-row">
+                <div className="profile-info-field-iconbox">
+                  <User size={20} />
+                </div>
+                <div className="profile-info-field-text">
+                  <span className="profile-info-field-label">Nombre</span>
+                  <strong className="profile-info-field-value">
+                    {currentUser?.nombre || 'ENYERBERT DANIEL MORALES RAMIREZ'}
+                  </strong>
+                </div>
+              </div>
+
+              {/* 2. Documento de identidad */}
+              <div className="profile-info-field-row">
+                <div className="profile-info-field-iconbox">
+                  <FileText size={20} />
+                </div>
+                <div className="profile-info-field-text">
+                  <span className="profile-info-field-label">Documento de identidad</span>
+                  <strong className="profile-info-field-value">
+                    {currentUser?.cedula
+                      ? (currentUser.cedula.includes(' - ')
+                          ? currentUser.cedula
+                          : currentUser.cedula.includes('-')
+                          ? currentUser.cedula.replace('-', ' - ')
+                          : `V - ${currentUser.cedula}`)
+                      : 'V - 31.154.011'}
+                  </strong>
+                </div>
+              </div>
+
+              {/* 3. Correo */}
+              <div className="profile-info-field-row">
+                <div className="profile-info-field-iconbox">
+                  <Mail size={20} />
+                </div>
+                <div className="profile-info-field-text">
+                  <span className="profile-info-field-label">Correo</span>
+                  <strong className="profile-info-field-value">
+                    {currentUser?.correo || 'enyerbertban@gmail.com'}
+                  </strong>
+                </div>
+              </div>
+
+              {/* 4. Usuario */}
+              <div className="profile-info-field-row">
+                <div className="profile-info-field-iconbox">
+                  <User size={20} />
+                </div>
+                <div className="profile-info-field-text">
+                  <span className="profile-info-field-label">Usuario</span>
+                  <strong className="profile-info-field-value">
+                    {currentUser?.usuario || 'enyerbertban@gmail.com'}
+                  </strong>
+                </div>
+              </div>
+
+              {/* 5. Teléfono */}
+              <div className="profile-info-field-row">
+                <div className="profile-info-field-iconbox">
+                  <Phone size={20} />
+                </div>
+                <div className="profile-info-field-text">
+                  <span className="profile-info-field-label">Teléfono</span>
+                  <strong className="profile-info-field-value">
+                    {currentUser?.telefono || '+58-4123807072'}
+                  </strong>
+                </div>
+              </div>
+
+              {/* 6. Fecha de nacimiento */}
+              <div className="profile-info-field-row">
+                <div className="profile-info-field-iconbox">
+                  <Calendar size={20} />
+                </div>
+                <div className="profile-info-field-text">
+                  <span className="profile-info-field-label">Fecha de nacimiento</span>
+                  <strong className="profile-info-field-value">
+                    {currentUser?.fechaNacimiento || '15/12/2005'}
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Alternador de tema Claro / Oscuro integrado */}
+            <div className="profile-theme-toggle-row">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {theme === 'dark' ? <Moon size={20} color="#60A5FA" /> : <Sun size={20} color="#F59E0B" />}
+                <div>
+                  <span className="profile-theme-label" style={{ display: 'block', fontSize: 13 }}>Tema visual:</span>
+                  <strong className="profile-theme-current" style={{ fontSize: 14 }}>
+                    {theme === 'dark' ? 'Modo Oscuro' : 'Modo Claro'}
+                  </strong>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="profile-theme-switch-btn"
+                onClick={toggleTheme}
+              >
+                Cambiar a {theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}
+              </button>
             </div>
           </div>
         </div>

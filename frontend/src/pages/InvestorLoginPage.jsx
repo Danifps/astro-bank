@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout';
 import InvestorIllustration from '../components/InvestorIllustration';
@@ -20,6 +20,11 @@ export default function InvestorLoginPage() {
   );
   const [loading, setLoading] = useState(false);
 
+  // Al abrir la página de Login, asegurar que no quede ninguna sesión previa guardada
+  useEffect(() => {
+    authService.clearSession();
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -40,7 +45,9 @@ export default function InvestorLoginPage() {
     setError('');
 
     try {
+      console.log('📡 [FRONTEND] Enviando credenciales inversionista...', { idOrEmail: formData.investorIdOrEmail });
       const res = await authService.login(formData.investorIdOrEmail, formData.claveAcceso);
+      console.log('📡 [FRONTEND] Respuesta del backend:', res);
 
       if (res.ok && res.usuario) {
         authService.saveSession({
@@ -49,9 +56,11 @@ export default function InvestorLoginPage() {
         }, res);
         navigate('/dashboard');
       } else {
-        setError(res.mensaje || 'Credenciales de inversionista inválidas.');
+        authService.clearSession();
+        setError(res?.mensaje || 'Credenciales de inversionista inválidas.');
       }
     } catch {
+      authService.clearSession();
       setError('Error al procesar la solicitud.');
     } finally {
       setLoading(false);

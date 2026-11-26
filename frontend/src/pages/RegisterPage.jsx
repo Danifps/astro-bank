@@ -5,7 +5,8 @@ import {
   FileCheck,
   Info,
   AlertCircle,
-  ShieldCheck
+  ShieldCheck,
+  Loader2
 } from 'lucide-react';
 import AuthLayout from '../components/AuthLayout';
 import { authService } from '../services/authService';
@@ -218,8 +219,8 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [errorMessage, setErrorMessage] = useState('');
-  const [successModal, setSuccessModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successModal, setSuccessModal] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [cedulaFileName, setCedulaFileName] = useState('');
@@ -560,7 +561,7 @@ export default function RegisterPage() {
     }
 
     const usuarioNormalizado = formData.usuario.trim().toLowerCase();
-    const cedulaNormalizada = formData.numeroDocumento.trim();
+    const cedulaNormalizada = formData.numeroDocumento.trim().replace(/\D/g, '');
     const nombresLimpios = formData.nombres.trim();
     const apellidosLimpios = formData.apellidos.trim();
 
@@ -575,7 +576,7 @@ export default function RegisterPage() {
         usuario: usuarioNormalizado,
         tipo_documento: formData.tipoDocumento,
         cedula: cedulaNormalizada,
-        archivo_documento: formData.archivoDocumento,
+        archivo_documento: formData.archivoDocumento || `uploads/documentos/${formData.tipoDocumento.toLowerCase()}${cedulaNormalizada}_cedula.pdf`,
         nombres: nombresLimpios,
         apellidos: apellidosLimpios,
         nombre_completo: `${nombresLimpios} ${apellidosLimpios}`.trim(),
@@ -606,10 +607,13 @@ export default function RegisterPage() {
       if (res.ok) {
         setSuccessModal(true);
       } else {
-        setErrorMessage(res.mensaje || 'No se pudo completar el registro.');
+        setErrorMessage(res.mensaje || 'Error al procesar el registro en Astro Bank.');
+        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
       }
-    } catch {
-      setErrorMessage('Error de comunicación con el servidor al registrar el cliente.');
+    } catch (error) {
+      console.error('Error al registrar usuario:', error);
+      setErrorMessage('No se pudo conectar con el servidor de Astro Bank. Verifica que el backend esté en ejecución.');
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
     } finally {
       setIsSubmitting(false);
     }
@@ -1210,7 +1214,14 @@ export default function RegisterPage() {
               className="bank-btn bank-btn-primary"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Creando cuenta...' : step === TOTAL_STEPS ? 'Crear mi Cuenta' : 'Siguiente'}
+              {isSubmitting ? (
+                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                  <span>Registrando en Astro Bank...</span>
+                </span>
+              ) : (
+                step === TOTAL_STEPS ? 'Crear mi Cuenta' : 'Siguiente'
+              )}
             </button>
           </div>
         </form>
@@ -1243,7 +1254,7 @@ export default function RegisterPage() {
               </div>
               <h2 className="success-modal-title">¡Registro Completado con Éxito!</h2>
               <p className="success-modal-desc">
-                Tus datos han sido registrados en <strong>Astro Bank</strong>. Ya puedes iniciar sesión con tu documento o usuario y tu clave de acceso.
+                Tu cuenta para el usuario <strong>@{formData.usuario.trim().toLowerCase()}</strong> ha sido creada y guardada exitosamente en la base de datos de <strong>Astro Bank</strong>. Ya puedes iniciar sesión con tu cédula o usuario y tu clave de acceso.
               </p>
               <button
                 type="button"

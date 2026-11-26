@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout';
 import PersonasIllustration from '../components/PersonasIllustration';
@@ -20,6 +20,10 @@ export default function LoginPage() {
   );
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    authService.clearSession();
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -40,15 +44,19 @@ export default function LoginPage() {
     setError('');
 
     try {
+      console.log('📡 [FRONTEND] Enviando credenciales al backend...', { usuarioOCedula: formData.usuarioOCedula });
       const res = await authService.login(formData.usuarioOCedula, formData.claveAcceso);
+      console.log('📡 [FRONTEND] Respuesta del backend:', res);
 
       if (res.ok && res.usuario) {
         authService.saveSession(res.usuario, res);
         navigate('/dashboard');
       } else {
-        setError(res.mensaje || 'Error al iniciar sesión. Verifica tus credenciales.');
+        authService.clearSession();
+        setError(res?.mensaje || 'Acceso denegado: Credenciales inválidas.');
       }
     } catch {
+      authService.clearSession();
       setError('Error al procesar la solicitud.');
     } finally {
       setLoading(false);

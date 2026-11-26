@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 export const connectDB = async () => {
   try {
     const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/AstroBankbd?directConnection=true';
-    
+
     // Ocultar credenciales si existen en la URL para el log de consola
     const maskedUri = mongoUri.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@');
     console.log(`📡 Intentando conectar a MongoDB: ${maskedUri}`);

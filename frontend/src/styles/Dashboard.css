@@ -738,7 +738,7 @@
   width: 100%;
   position: relative;
   border-radius: 8px;
-  min-height: 230px;
+  min-height: 280px;
 }
 
 .billetera-slider-track {
@@ -757,13 +757,15 @@
   flex-direction: column;
 }
 
-/* Sparkline chart – alineado a la derecha desde la zona del monto */
+/* Sparkline chart – cubre el 100% de lado a lado de la tarjeta de crédito */
 .credit-sparkline-wrap {
   display: flex;
   flex-direction: column;
-  width: 68%;
-  margin-left: auto;
-  margin-bottom: 10px;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 12px;
+  margin-bottom: 16px;
 }
 
 @media (max-width: 768px) {
@@ -1427,27 +1429,28 @@
 .verificacion-input-control {
   flex: 1;
   max-width: 250px;
-  padding: 8px 14px;
+  padding: 10px 14px;
   background-color: #FFFFFF;
-  border: 1.8px solid #0F172A;
+  border: 1.5px solid #E2E8F0;
   border-radius: 10px;
   font-size: 14px;
   font-family: inherit;
   color: #0F172A;
   outline: none;
   transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
 }
 
 .verificacion-input-control:focus {
   border-color: #0000FF;
-  box-shadow: 0 0 0 3px rgba(0, 0, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 0, 255, 0.08);
 }
 
 /* Dropzone Cargar comprobante */
 .comprobante-card-dropzone {
-  border: 1.8px solid #0F172A;
+  border: 2px dashed #CBD5E1;
   border-radius: 16px;
-  background-color: #FFFFFF;
+  background-color: #F8FAFC;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1463,7 +1466,7 @@
 
 .comprobante-card-dropzone:hover {
   border-color: #0000FF;
-  background-color: #F8FAFC;
+  background-color: #EFF6FF;
   box-shadow: 0 4px 14px rgba(0, 0, 255, 0.08);
 }
 
@@ -1506,29 +1509,31 @@
 /* Botón Comprobar Pago */
 .btn-comprobar-pago-main {
   width: 100%;
-  padding: 16px;
-  background-color: #FFFFFF;
-  color: #0F172A;
-  border: 2px solid #0F172A;
-  border-radius: 14px;
-  font-size: 17.5px;
-  font-weight: 800;
+  max-width: 320px;
+  display: block;
+  margin: 10px auto 0 auto;
+  padding: 11px 24px;
+  background-color: #0000FF;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  font-size: 14.5px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  letter-spacing: -0.2px;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+  letter-spacing: -0.1px;
+  box-shadow: 0 2px 8px rgba(0, 0, 255, 0.18);
 }
 
 .btn-comprobar-pago-main:hover {
-  background-color: #0000FF;
-  border-color: #0000FF;
-  color: #FFFFFF;
-  box-shadow: 0 6px 20px rgba(0, 0, 255, 0.24);
+  background-color: #0000D8;
+  box-shadow: 0 4px 14px rgba(0, 0, 255, 0.26);
   transform: translateY(-1px);
 }
 
 .btn-comprobar-pago-main:active {
   transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 255, 0.2);
 }
 
 @media (max-width: 960px) {
@@ -1728,23 +1733,21 @@
 
 .credito-btn-solicitar {
   padding: 13px 32px;
-  background-color: #FFFFFF;
-  color: #0F172A;
-  border: 1.8px solid #0F172A;
+  background-color: #0000FF;
+  color: #FFFFFF;
+  border: none;
   border-radius: 12px;
   font-size: 15.5px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 4px 14px rgba(0, 0, 255, 0.22);
   white-space: nowrap;
 }
 
 .credito-btn-solicitar:hover {
-  background-color: #0000FF;
-  border-color: #0000FF;
-  color: #FFFFFF;
-  box-shadow: 0 6px 18px rgba(0, 0, 255, 0.22);
+  background-color: #0000D8;
+  box-shadow: 0 6px 18px rgba(0, 0, 255, 0.32);
   transform: translateY(-1px);
 }
 
@@ -1813,7 +1816,7 @@
 
 .transaccion-card {
   background-color: #FFFFFF;
-  border: 1.8px solid #0F172A;
+  border: 1.5px solid #E2E8F0;
   border-radius: 20px;
   padding: 36px 40px;
   box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
@@ -1873,7 +1876,7 @@
   width: 100%;
   padding: 13px 18px;
   background-color: #FFFFFF;
-  border: 1.8px solid #0F172A;
+  border: 1.5px solid #E2E8F0;
   border-radius: 12px;
   font-family: 'Roboto', sans-serif;
   font-size: 14.5px;
@@ -1881,6 +1884,7 @@
   outline: none;
   transition: all 0.2s ease;
   box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
 }
 
 .transaccion-input-box::placeholder {
@@ -1889,7 +1893,7 @@
 
 .transaccion-input-box:focus {
   border-color: #0000FF;
-  box-shadow: 0 0 0 3px rgba(0, 0, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 0, 255, 0.08);
 }
 
 .transaccion-input-box.select {
@@ -1907,7 +1911,7 @@
   width: 72px;
   padding: 13px 14px;
   background-color: #FFFFFF;
-  border: 1.8px solid #0F172A;
+  border: 1.5px solid #E2E8F0;
   border-radius: 12px;
   font-family: 'Montserrat', sans-serif;
   font-size: 14.5px;
@@ -1916,11 +1920,12 @@
   outline: none;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
 }
 
 .transaccion-doc-prefix:focus {
   border-color: #0000FF;
-  box-shadow: 0 0 0 3px rgba(0, 0, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 0, 255, 0.08);
 }
 
 .transaccion-brand-col {
@@ -1933,65 +1938,74 @@
 .transaccion-brand-watermark {
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: center;
+  width: 100%;
   user-select: none;
 }
 
-.transaccion-brand-title {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 38px;
-  font-weight: 900;
-  color: #0000FF;
-  letter-spacing: -0.5px;
-}
-
-.transaccion-brand-star-svg {
-  width: 70px;
-  height: 70px;
-  flex-shrink: 0;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 255, 0.2));
+.transaccion-brand-img {
+  max-width: 280px;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  user-select: none;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 255, 0.08));
 }
 
 .transaccion-actions-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 420px;
+  margin-top: 16px;
 }
 
-.btn-hacer-pago,
-.btn-limpiar-campos {
-  width: 100%;
-  padding: 14px 24px;
-  border: 1.8px solid #0F172A;
-  border-radius: 12px;
+.btn-hacer-pago {
+  flex: 1;
+  padding: 10.5px 22px;
+  border: none;
+  border-radius: 10px;
   font-family: 'Montserrat', sans-serif;
-  font-size: 16px;
-  font-weight: 800;
-  background-color: #FFFFFF;
-  color: #0F172A;
+  font-size: 14px;
+  font-weight: 600;
+  background-color: #0000FF;
+  color: #FFFFFF;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 255, 0.18);
 }
 
 .btn-hacer-pago:hover {
-  background-color: #0000FF;
-  border-color: #0000FF;
-  color: #FFFFFF;
-  box-shadow: 0 6px 20px rgba(0, 0, 255, 0.22);
+  background-color: #0000D8;
+  box-shadow: 0 4px 14px rgba(0, 0, 255, 0.26);
   transform: translateY(-1px);
 }
 
 .btn-hacer-pago:active {
   transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 255, 0.2);
+}
+
+.btn-limpiar-campos {
+  flex: 1;
+  padding: 10.5px 22px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  background-color: #FFFFFF;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
 }
 
 .btn-limpiar-campos:hover {
   background-color: #F8FAFC;
-  border-color: #64748B;
+  border-color: #CBD5E1;
   color: #0F172A;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
   transform: translateY(-1px);
 }
 
@@ -2010,22 +2024,18 @@
   }
 
   .transaccion-brand-col {
-    min-height: 100px;
+    min-height: 90px;
     padding: 12px 0;
   }
 
-  .transaccion-brand-title {
-    font-size: 28px;
-  }
-
-  .transaccion-brand-star-svg {
-    width: 50px;
-    height: 50px;
+  .transaccion-brand-img {
+    max-width: 200px;
   }
 
   .transaccion-actions-row {
-    grid-template-columns: 1fr;
-    gap: 14px;
+    max-width: 100%;
+    flex-direction: column;
+    gap: 12px;
   }
 }
 
@@ -2038,7 +2048,7 @@
 
 .historial-card {
   background-color: #FFFFFF;
-  border: 1.8px solid #0F172A;
+  border: 1.5px solid #E2E8F0;
   border-radius: 20px;
   padding: 36px 40px;
   box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
@@ -2054,7 +2064,7 @@
 }
 
 .historial-table-box {
-  border: 1.8px solid #0F172A;
+  border: 1.5px solid #E2E8F0;
   border-radius: 16px;
   background-color: #FFFFFF;
   min-height: 460px;
@@ -2062,6 +2072,7 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.02);
 }
 
 .historial-table-box .dashboard-table th {
@@ -2200,6 +2211,221 @@
   color: #0F172A;
 }
 
+/* Modal específico para Solicitar Crédito con Formulario Dinámico */
+.credit-solicitar-modal-card {
+  max-width: 530px !important;
+  max-height: 90vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 #F8FAFC;
+}
+
+.credit-solicitar-modal-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.credit-solicitar-modal-card::-webkit-scrollbar-track {
+  background: #F8FAFC;
+  border-radius: 8px;
+}
+
+.credit-solicitar-modal-card::-webkit-scrollbar-thumb {
+  background-color: #CBD5E1;
+  border-radius: 8px;
+}
+
+.credit-field-hint {
+  font-size: 12px;
+  color: #64748B;
+  margin-top: 5px;
+  display: block;
+  line-height: 1.4;
+}
+
+.credit-field-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #DC2626;
+  margin-top: 6px;
+  font-weight: 500;
+  background-color: #FEF2F2;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #FEE2E2;
+}
+
+.bank-input-error {
+  border-color: #DC2626 !important;
+  background-color: #FEF2F2 !important;
+}
+
+.credit-plazo-pills-row {
+  display: flex;
+  gap: 8px;
+}
+
+.credit-plazo-pill {
+  flex: 1;
+  padding: 10px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 1.5px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.credit-plazo-pill:hover {
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+.credit-plazo-pill.active {
+  border-color: #0000FF;
+  background-color: #EFF6FF;
+  color: #0000FF;
+  font-weight: 700;
+  box-shadow: 0 0 0 1px #0000FF;
+}
+
+.credit-file-upload-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 18px 14px;
+  border: 1.5px dashed #CBD5E1;
+  border-radius: 12px;
+  background-color: #F8FAFC;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.credit-file-upload-box:hover {
+  border-color: #0000FF;
+  background-color: #EFF6FF;
+}
+
+.credit-file-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background-color: #F1F5F9;
+  border-radius: 10px;
+  border: 1px solid #E2E8F0;
+  gap: 10px;
+}
+
+.credit-file-thumbnail {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #CBD5E1;
+  flex-shrink: 0;
+}
+
+.credit-file-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
+}
+
+.credit-file-remove-btn {
+  border: none;
+  background: #E2E8F0;
+  color: #475569;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.credit-file-remove-btn:hover {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.credit-calc-summary-card {
+  background: linear-gradient(145deg, #F8FAFC 0%, #EEF2FF 100%);
+  border: 1.5px solid #DBEAFE;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.credit-calc-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.credit-calc-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1E3A8A;
+}
+
+.credit-calc-badge {
+  font-size: 11px;
+  font-weight: 700;
+  background-color: #DBEAFE;
+  color: #1D4ED8;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.credit-calc-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.credit-calc-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.credit-calc-lbl {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.credit-calc-val {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.credit-calc-val-highlight {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0000FF;
+  letter-spacing: -0.2px;
+}
+
 .dashboard-sidebar-backdrop {
   display: none;
 }
@@ -2247,4 +2473,855 @@
   .dashboard-user-name {
     display: none;
   }
+}
+
+/* ========================================================
+   BOTÓN DE CAMBIO DE TEMA (CLARO / OSCURO)
+   ======================================================== */
+.dashboard-theme-toggle-btn {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1.5px solid #E2E8F0;
+  background-color: #FFFFFF;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-theme-toggle-btn:hover {
+  background-color: #F8FAFC;
+  border-color: #0000FF;
+  color: #0000FF;
+  transform: scale(1.05);
+}
+
+/* ========================================================
+   MODAL: MI INFORMACIÓN (PERFIL DE USUARIO)
+   ======================================================== */
+.profile-info-modal-card {
+  max-width: 440px !important;
+  max-height: 92vh;
+  overflow-y: auto;
+  border-radius: 26px !important;
+  padding: 24px 24px 26px !important;
+  scrollbar-width: thin;
+}
+
+.profile-info-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.profile-info-modal-back-btn {
+  background: none;
+  border: none;
+  color: #475569;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.profile-info-modal-back-btn:hover {
+  background-color: #F1F5F9;
+  color: #0F172A;
+}
+
+.profile-info-modal-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  text-align: center;
+}
+
+/* Avatar central circular grande */
+.profile-info-avatar-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 0 18px;
+}
+
+.profile-info-avatar-circle {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #F8FAFC;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+  border: 3px solid #E2E8F0;
+}
+
+/* Lista de campos de información según captura */
+.profile-info-fields-list {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.profile-info-field-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 4px;
+  border-radius: 12px;
+  transition: background-color 0.18s ease;
+}
+
+.profile-info-field-row:hover {
+  background-color: #F8FAFC;
+}
+
+.profile-info-field-iconbox {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background-color: #1E293B;
+  color: #F8FAFC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.profile-info-field-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.profile-info-field-label {
+  font-size: 12.5px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.profile-info-field-value {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0F172A;
+  word-break: break-word;
+  line-height: 1.3;
+}
+
+/* Fila de Tema en el modal */
+.profile-theme-toggle-row {
+  margin-top: 10px;
+  padding-top: 14px;
+  border-top: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profile-theme-label {
+  font-size: 12px;
+  color: #64748B;
+}
+
+.profile-theme-current {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.profile-theme-switch-btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  border: 1.5px solid #0000FF;
+  background-color: #EFF6FF;
+  color: #0000FF;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile-theme-switch-btn:hover {
+  background-color: #0000FF;
+  color: #FFFFFF;
+}
+
+/* ========================================================
+   MODO OSCURO COMPLETO Y PROFESIONAL (DARK THEME)
+   ======================================================== */
+.dashboard-layout.dark-theme,
+[data-theme='dark'] body {
+  background-color: #0A0D14 !important;
+  color: #F8FAFC !important;
+}
+
+/* 1. Header y Sidebar */
+.dark-theme .dashboard-sidebar {
+  background-color: #121620 !important;
+  border-right-color: #1E2638 !important;
+}
+
+.dark-theme .dashboard-sidebar-header {
+  background-color: #121620 !important;
+  border-bottom-color: #1E2638 !important;
+}
+
+.dark-theme .dashboard-logo-img {
+  filter: brightness(0) invert(1) drop-shadow(0 0 2px rgba(255, 255, 255, 0.4)) !important;
+}
+
+.dark-theme .dashboard-sidebar-toggle-btn {
+  background-color: #1A2230 !important;
+  border-color: #283347 !important;
+  color: #94A3B8 !important;
+}
+
+.dark-theme .dashboard-sidebar-toggle-btn:hover {
+  background-color: #283347 !important;
+  color: #FFFFFF !important;
+}
+
+.dark-theme .dashboard-nav-item {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .dashboard-nav-item:hover {
+  background-color: #1A2230 !important;
+  color: #FFFFFF !important;
+}
+
+.dark-theme .dashboard-nav-item.active {
+  background-color: #0000FF !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 255, 0.35) !important;
+}
+
+.dark-theme .dashboard-sidebar-user-card {
+  background-color: #18202F !important;
+  border-color: #242D3D !important;
+}
+
+.dark-theme .dashboard-user-name-text {
+  color: #F8FAFC !important;
+}
+
+.dark-theme .dashboard-sidebar-logout-btn {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .dashboard-sidebar-logout-btn:hover {
+  background-color: #283347 !important;
+  color: #EF4444 !important;
+}
+
+.dark-theme .dashboard-header {
+  background-color: #121620 !important;
+  border-bottom-color: #1E2638 !important;
+}
+
+.dark-theme .dashboard-greeting-title {
+  color: #FFFFFF !important;
+}
+
+.dark-theme .dashboard-notif-btn,
+.dark-theme .dashboard-theme-toggle-btn,
+.dark-theme .mobile-menu-btn {
+  background-color: #1A2230 !important;
+  border-color: #283347 !important;
+  color: #E2E8F0 !important;
+}
+
+.dark-theme .dashboard-notif-btn:hover,
+.dark-theme .dashboard-theme-toggle-btn:hover {
+  background-color: #283347 !important;
+  border-color: #60A5FA !important;
+  color: #60A5FA !important;
+}
+
+.dark-theme .dashboard-body {
+  background-color: #0A0D14 !important;
+}
+
+/* 2. Tarjetas Principales del Dashboard (Inicio) */
+.dark-theme .dashboard-card,
+.dark-theme .dashboard-table-card,
+.dark-theme .credito-main-card,
+.dark-theme .registrar-pago-card,
+.dark-theme .transaccion-card,
+.dark-theme .historial-card,
+.dark-theme .payment-voucher-card {
+  background-color: #121620 !important;
+  border: 1.5px solid #1E2638 !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Tarjeta Mi Crédito Activo */
+.dark-theme .credit-active-title {
+  color: #FFFFFF !important;
+}
+
+.dark-theme .credit-line-label {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .credit-main-amount {
+  color: #FFFFFF !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark-theme .billeteras-label {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .credit-tabs-row {
+  background-color: #18202F !important;
+  border-color: #242D3D !important;
+}
+
+.dark-theme .credit-tab-btn {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .credit-tab-btn:hover {
+  color: #FFFFFF !important;
+}
+
+.dark-theme .credit-tab-btn.active {
+  background-color: #0000FF !important;
+  color: #FFFFFF !important;
+  border-color: #0000FF !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 255, 0.4) !important;
+}
+
+.dark-theme .credit-progress-bar-bg {
+  background-color: #1E2638 !important;
+}
+
+.dark-theme .credit-progress-bar-fill {
+  background: linear-gradient(90deg, #0000FF 0%, #3B82F6 100%) !important;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5) !important;
+}
+
+.dark-theme .credit-progress-caption {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .credit-link-details {
+  color: #60A5FA !important;
+}
+
+.dark-theme .credit-link-details:hover {
+  color: #93C5FD !important;
+}
+
+.dark-theme .credit-badge-status {
+  background-color: rgba(34, 197, 94, 0.15) !important;
+  color: #4ADE80 !important;
+  border: 1px solid rgba(74, 222, 128, 0.3) !important;
+}
+
+/* Gráfica Sparkline en modo oscuro */
+.dark-theme .credit-sparkline-wrap {
+  background-color: transparent !important;
+}
+
+.dark-theme .credit-sparkline-dot {
+  background-color: #3B82F6 !important;
+  border-color: #FFFFFF !important;
+  box-shadow: 0 0 10px #3B82F6 !important;
+}
+
+.dark-theme .credit-sparkline-vguide {
+  border-left: 1.5px dashed rgba(96, 165, 250, 0.4) !important;
+}
+
+.dark-theme .credit-sparkline-tooltip {
+  background-color: #18202F !important;
+  border-color: #3B82F6 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+}
+
+.dark-theme .credit-sparkline-label {
+  color: #64748B !important;
+}
+
+.dark-theme .credit-sparkline-label.active {
+  color: #60A5FA !important;
+  font-weight: 700 !important;
+}
+
+/* Tarjeta Tu Próxima Cuota */
+.dark-theme .cuota-title {
+  color: #FFFFFF !important;
+}
+
+.dark-theme .cuota-badge-days {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: #FBBF24 !important;
+  border: 1px solid rgba(251, 191, 36, 0.3) !important;
+}
+
+.dark-theme .cuota-label {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .cuota-amount {
+  color: #FFFFFF !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark-theme .cuota-deadline {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .cuota-btn-pay {
+  background-color: #0000FF !important;
+  border-color: #0000FF !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 255, 0.3) !important;
+}
+
+.dark-theme .cuota-btn-pay:hover {
+  background-color: #1A1AFF !important;
+  border-color: #1A1AFF !important;
+  color: #FFFFFF !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 255, 0.5) !important;
+}
+
+/* 3. Tablas de Datos (Solicitudes y Movimientos) */
+.dark-theme .inicio-section-title {
+  color: #FFFFFF !important;
+}
+
+.dark-theme .dashboard-table th {
+  background-color: #161D2B !important;
+  color: #94A3B8 !important;
+  border-bottom: 1px solid #242D3D !important;
+}
+
+.dark-theme .dashboard-table td {
+  border-bottom: 1px solid #1A2230 !important;
+  color: #E2E8F0 !important;
+}
+
+.dark-theme .dashboard-table tr:hover td {
+  background-color: #171E2B !important;
+}
+
+.dark-theme .type-badge {
+  background-color: rgba(37, 99, 235, 0.15) !important;
+  color: #93C5FD !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+}
+
+.dark-theme .action-link-btn {
+  color: #60A5FA !important;
+}
+
+.dark-theme .action-link-btn:hover {
+  color: #93C5FD !important;
+}
+
+.dark-theme .amount-income {
+  color: #4ADE80 !important;
+}
+
+.dark-theme .amount-expense {
+  color: #F87171 !important;
+}
+
+/* 4. Pantalla Crédito */
+.dark-theme .credito-hero-title {
+  color: #FFFFFF !important;
+}
+
+.dark-theme .credito-hero-subtitle {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .credito-line-label {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .credito-line-amount {
+  color: #FFFFFF !important;
+}
+
+.dark-theme .credito-section-title {
+  color: #FFFFFF !important;
+}
+
+.dark-theme .credito-btn-solicitar {
+  background-color: #0000FF !important;
+  color: #FFFFFF !important;
+  border-color: #0000FF !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 255, 0.3) !important;
+}
+
+.dark-theme .credito-btn-solicitar:hover {
+  background-color: #1A1AFF !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 255, 0.5) !important;
+}
+
+/* 5. Pantalla Registrar Pago */
+.dark-theme .registrar-pago-lead {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .pago-section-label {
+  color: #FFFFFF !important;
+}
+
+.dark-theme .cuota-headers-grid span {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .cuota-selector-box {
+  background-color: #18202F !important;
+  border: 1.5px solid #242D3D !important;
+  color: #FFFFFF !important;
+}
+
+.dark-theme .cuota-selector-box:hover {
+  border-color: #3B82F6 !important;
+}
+
+.dark-theme .cuota-selector-box span {
+  color: #FFFFFF !important;
+}
+
+.dark-theme .cuota-dropdown-list {
+  background-color: #18202F !important;
+  border: 1.5px solid #283347 !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6) !important;
+}
+
+.dark-theme .cuota-dropdown-row {
+  color: #E2E8F0 !important;
+  border-bottom: 1px solid #242D3D !important;
+}
+
+.dark-theme .cuota-dropdown-row:hover {
+  background-color: #202A3C !important;
+}
+
+.dark-theme .cuota-dropdown-row.selected {
+  background-color: rgba(0, 0, 255, 0.15) !important;
+  color: #FFFFFF !important;
+}
+
+.dark-theme .metodo-selector-box {
+  background-color: #18202F !important;
+  border: 1.5px solid #242D3D !important;
+  color: #FFFFFF !important;
+}
+
+.dark-theme .banco-selector-box,
+.dark-theme .referencia-input-box {
+  background-color: #18202F !important;
+  border: 1.5px solid #242D3D !important;
+  color: #FFFFFF !important;
+}
+
+.dark-theme .comprobante-dropzone {
+  background-color: #18202F !important;
+  border-color: #283347 !important;
+}
+
+.dark-theme .comprobante-dropzone:hover {
+  border-color: #3B82F6 !important;
+  background-color: #1D2638 !important;
+}
+
+.dark-theme .comprobante-dropzone span {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .bank-info-label {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .bank-info-value {
+  color: #FFFFFF !important;
+}
+
+.dark-theme .btn-comprobar-pago-main {
+  background-color: #0000FF !important;
+  color: #FFFFFF !important;
+  border-color: #0000FF !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 255, 0.3) !important;
+}
+
+.dark-theme .btn-comprobar-pago-main:hover {
+  background-color: #1A1AFF !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 255, 0.5) !important;
+}
+
+/* 6. Pantalla Transacción */
+.dark-theme .transaccion-lead {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .tx-doc-prefix-select,
+.dark-theme .tx-input-clean {
+  background-color: #18202F !important;
+  border: 1.5px solid #242D3D !important;
+  color: #FFFFFF !important;
+}
+
+.dark-theme .tx-input-clean::placeholder {
+  color: #64748B !important;
+}
+
+.dark-theme .transaccion-logo-watermark {
+  opacity: 0.18 !important;
+  filter: brightness(0) invert(1) !important;
+}
+
+.dark-theme .btn-hacer-pago {
+  background-color: #0000FF !important;
+  color: #FFFFFF !important;
+  border-color: #0000FF !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 255, 0.3) !important;
+}
+
+.dark-theme .btn-hacer-pago:hover {
+  background-color: #1A1AFF !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 255, 0.5) !important;
+}
+
+.dark-theme .btn-limpiar-campos {
+  background-color: #1A2230 !important;
+  border: 1.5px solid #283347 !important;
+  color: #E2E8F0 !important;
+}
+
+.dark-theme .btn-limpiar-campos:hover {
+  background-color: #242D3D !important;
+  color: #FFFFFF !important;
+}
+
+/* 7. Pantalla Historial de Movimientos */
+.dark-theme .historial-lead {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .historial-search-bar {
+  background-color: #18202F !important;
+  border: 1.5px solid #242D3D !important;
+  color: #FFFFFF !important;
+}
+
+/* 8. Modales en Modo Oscuro */
+.dark-theme .dashboard-modal-card {
+  background-color: #121620 !important;
+  border: 1.5px solid #242D3D !important;
+  color: #F8FAFC !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7) !important;
+}
+
+.dark-theme .dashboard-modal-title {
+  color: #FFFFFF !important;
+}
+
+.dark-theme .dashboard-modal-close {
+  background-color: #1A2230 !important;
+  color: #94A3B8 !important;
+}
+
+.dark-theme .dashboard-modal-close:hover {
+  background-color: #242D3D !important;
+  color: #FFFFFF !important;
+}
+
+.dark-theme .bank-input,
+.dark-theme .bank-select {
+  background-color: #18202F !important;
+  border: 1.5px solid #242D3D !important;
+  color: #FFFFFF !important;
+}
+
+.dark-theme .bank-label {
+  color: #E2E8F0 !important;
+}
+
+.dark-theme .bank-btn-secondary {
+  background-color: #1A2230 !important;
+  border-color: #283347 !important;
+  color: #E2E8F0 !important;
+}
+
+.dark-theme .bank-btn-secondary:hover {
+  background-color: #242D3D !important;
+  color: #FFFFFF !important;
+}
+
+/* Modal Solicitar Crédito Dinámico */
+.dark-theme .credit-calc-summary-card {
+  background: linear-gradient(145deg, #161D2B 0%, #121620 100%) !important;
+  border-color: #1E3A8A !important;
+}
+
+.dark-theme .credit-calc-title {
+  color: #93C5FD !important;
+}
+
+.dark-theme .credit-calc-badge {
+  background-color: #1E3A8A !important;
+  color: #93C5FD !important;
+}
+
+.dark-theme .credit-calc-val {
+  color: #FFFFFF !important;
+}
+
+.dark-theme .credit-calc-val-highlight {
+  color: #60A5FA !important;
+}
+
+.dark-theme .credit-plazo-pill {
+  background-color: #18202F !important;
+  border-color: #242D3D !important;
+  color: #94A3B8 !important;
+}
+
+.dark-theme .credit-plazo-pill:hover {
+  border-color: #4B5563 !important;
+  color: #FFFFFF !important;
+}
+
+.dark-theme .credit-plazo-pill.active {
+  background-color: #0000FF !important;
+  border-color: #3B82F6 !important;
+  color: #FFFFFF !important;
+}
+
+.dark-theme .credit-file-upload-box {
+  background-color: #161D2B !important;
+  border-color: #283347 !important;
+}
+
+.dark-theme .credit-file-badge-row {
+  background-color: #18202F !important;
+  border-color: #242D3D !important;
+}
+
+.dark-theme .credit-file-name {
+  color: #FFFFFF !important;
+}
+
+/* Modal Mi Información */
+.dark-theme .profile-info-modal-card {
+  background-color: #121620 !important;
+  border-color: #242D3D !important;
+}
+
+.dark-theme .profile-info-modal-title {
+  color: #FFFFFF !important;
+}
+
+.dark-theme .profile-info-modal-back-btn {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .profile-info-modal-back-btn:hover {
+  background-color: #1A2230 !important;
+  color: #FFFFFF !important;
+}
+
+.dark-theme .profile-info-avatar-circle {
+  background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%) !important;
+  border-color: #242D3D !important;
+  color: #FFFFFF !important;
+}
+
+.dark-theme .profile-info-field-row:hover {
+  background-color: #18202F !important;
+}
+
+.dark-theme .profile-info-field-iconbox {
+  background-color: #18202F !important;
+  border: 1px solid #242D3D !important;
+  color: #FFFFFF !important;
+}
+
+.dark-theme .profile-info-field-label {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .profile-info-field-value {
+  color: #FFFFFF !important;
+}
+
+.dark-theme .profile-theme-toggle-row {
+  border-top-color: #1E2638 !important;
+}
+
+.dark-theme .profile-theme-label {
+  color: #94A3B8 !important;
+}
+
+.dark-theme .profile-theme-current {
+  color: #FFFFFF !important;
+}
+
+.dark-theme .profile-theme-switch-btn {
+  border-color: #3B82F6 !important;
+  background-color: #1E3A8A !important;
+  color: #93C5FD !important;
+}
+
+.dark-theme .profile-theme-switch-btn:hover {
+  background-color: #2563EB !important;
+  color: #FFFFFF !important;
+}
+
+/* Reglas de anulación de textos oscuros inline en modo oscuro */
+.dark-theme [style*="color: #0F172A"],
+.dark-theme [style*="color:#0F172A"],
+.dark-theme [style*="color: rgb(15, 23, 42)"] {
+  color: #FFFFFF !important;
+}
+
+.dark-theme [style*="color: #1E293B"],
+.dark-theme [style*="color:#1E293B"],
+.dark-theme [style*="color: rgb(30, 41, 59)"] {
+  color: #E2E8F0 !important;
+}
+
+.dark-theme [style*="color: #64748B"],
+.dark-theme [style*="color:#64748B"],
+.dark-theme [style*="color: rgb(100, 116, 139)"] {
+  color: #94A3B8 !important;
+}
+
+.dark-theme [style*="background-color: #F8FAFC"],
+.dark-theme [style*="backgroundColor: '#F8FAFC'"],
+.dark-theme [style*="background-color: rgb(248, 250, 252)"] {
+  background-color: #18202F !important;
+}
+
+.dark-theme [style*="border-top: 1px solid #E2E8F0"],
+.dark-theme [style*="borderTop: '1px solid #E2E8F0'"] {
+  border-top-color: #1E2638 !important;
+}
+
+.dark-theme .dashboard-footer {
+  border-top-color: #1E2638 !important;
+  color: #64748B !important;
 }
